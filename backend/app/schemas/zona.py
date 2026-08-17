@@ -1,0 +1,57 @@
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
+class ZonaBase(BaseModel):
+    nombre: str
+    descripcion: Optional[str] = None
+
+
+class ZonaCreate(ZonaBase):
+    pass
+
+
+class ZonaUpdate(BaseModel):
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+    estatus: Optional[str] = None
+
+
+class ZonaResponse(ZonaBase):
+    id: int
+    estatus: str
+    fecha_registro: datetime
+    en_uso: bool = False
+    usuario_en_uso: Optional[str] = None
+    sesion_id: Optional[int] = None
+    total_puntos: int = 0  # ← NUEVO: Cantidad de puntos asignados
+
+    class Config:
+        from_attributes = True
+
+
+class PuntoControlBase(BaseModel):
+    nombre: str
+    zona_id: Optional[int] = None
+
+
+class PuntoControlCreate(PuntoControlBase):
+    pass
+
+
+class PuntoControlUpdate(BaseModel):
+    nombre: Optional[str] = None
+    zona_id: Optional[int] = None
+    estatus: Optional[str] = None
+
+
+class PuntoControlResponse(BaseModel):
+    id: int
+    nombre: str
+    estatus: str
+    zona_id: Optional[int] = None
+    zona_nombre: Optional[str] = None
+
+    class Config:
+        from_attributes = True
