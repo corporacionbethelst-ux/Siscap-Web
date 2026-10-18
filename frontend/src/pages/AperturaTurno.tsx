@@ -47,7 +47,7 @@ export default function AperturaTurno() {
   // ============================================================
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/login');
   };
 
   // ============================================================

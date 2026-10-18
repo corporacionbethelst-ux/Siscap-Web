@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import { personalApi } from '../services/personal';
-import { movimientoApi, MovimientoPersonal } from '../services/movimiento';
-import { sesionApi } from '../services/sesion';
+import { movimientoApi } from '../services/movimiento';
 import { toast } from 'sonner';
 import {
-  Search, UserCheck, UserX, Search as SearchIcon, LogIn, LogOut,
+  UserCheck, Search as SearchIcon, LogIn, LogOut,
   Clock, FileText, Plus, AlertCircle, ArrowLeft
 } from 'lucide-react';
 
