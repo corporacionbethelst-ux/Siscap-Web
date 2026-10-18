@@ -54,7 +54,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Suspense fallback={<PageFallback />}>
       <Routes>
         {/* Portal público: selección de departamento (Unidad de Seguridad Integral) */}
