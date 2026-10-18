@@ -1,1 +1,18 @@
 dist/
+
+# Variables de entorno (NUNCA comprometer)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Node
+node_modules/
+
+# Subidas de importación
+backend/uploads/
