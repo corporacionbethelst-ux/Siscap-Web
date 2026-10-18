@@ -35,7 +35,7 @@ export default function Materiales() {
   useEffect(() => {
     if (!sesionActiva) {
       toast.error('Debe abrir un turno primero');
-      navigate('/apertura-turno');
+      navigate('/dept/proteccion-prevencion');
     }
   }, [sesionActiva, navigate]);
 
@@ -139,7 +139,7 @@ export default function Materiales() {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Botón Volver */}
       <button
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate('/dept/proteccion-prevencion/dashboard')}
         className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4 font-medium transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />

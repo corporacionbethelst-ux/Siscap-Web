@@ -15,6 +15,8 @@ export default function Landing() {
 
   const handleSelect = (depto: Departamento) => {
     if (depto.status === 'activo') {
+      // Navegación SPA a la ruta canónica del departamento
+      // (/dept/proteccion-prevencion → AperturaTurno tras login).
       navigate(depto.ruta);
     }
   };
@@ -118,9 +120,17 @@ export default function Landing() {
                   ))}
                 </ul>
 
-                {/* Acción */}
+                {/* Acción: <button type="button"> evita submit fantasma si la tarjeta
+                    se renderiza dentro de un formulario; la navegación es SPA-safe. */}
                 {activo ? (
-                  <button className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-blue-950/50 group-hover:from-blue-500 group-hover:to-indigo-500 transition-all">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(depto);
+                    }}
+                    className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-blue-950/50 group-hover:from-blue-500 group-hover:to-indigo-500 transition-all"
+                  >
                     Ingresar al módulo
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </button>
