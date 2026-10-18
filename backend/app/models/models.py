@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Text, DateTime, Date, Boolean,
-    ForeignKey, Index, func
+    ForeignKey, Index, func, text
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -158,6 +158,17 @@ class Sesion(Base):
     movimientos_visitantes = relationship("MovimientoVisitante", back_populates="sesion")
 
     __table_args__ = (
+        # INTEGRIDAD (regla de negocio #2 — bloqueo exclusivo):
+        # Garantiza a nivel de BD que un punto de control tenga como máximo
+        # UNA sesión ACTIVA, incluso ante aperturas concurrentes (race entre
+        # workers Gunicorn). El check-then-insert de crud.sesion.crear_sesion
+        # queda respaldado por este índice único parcial (PostgreSQL).
+        Index(
+            "uq_sesion_activa_por_punto",
+            "punto_control",
+            unique=True,
+            postgresql_where=text("estado = 'ACTIVA'"),
+        ),
         # RENDIMIENTO (M-1): bloqueo exclusivo por punto → consulta
         # WHERE punto_control = ? AND estado = 'ACTIVA' en cada apertura/liberación.
         Index("idx_sesion_punto_estado", "punto_control", "estado"),
