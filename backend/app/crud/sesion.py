@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.models.models import Sesion, Personal, Turno, Evento
 from app.utils.turnos import calcular_rango_turno
@@ -63,6 +64,10 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
             fecha=date.today(),
             hora=datetime.now().strftime("%H:%M:%S"),
         ))
+        # Liberar el bloqueo ANTES del INSERT de la nueva sesión: el índice
+        # único parcial uq_sesion_activa_por_punto exige que no exista otra
+        # fila ACTIVA para el mismo punto al momento de insertar.
+        db.flush()
     
     # Buscar turno
     turno = db.query(Turno).filter(Turno.codigo == data.turno_codigo).first()
@@ -105,6 +110,16 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
         estado="ACTIVA"
     )
     db.add(sesion)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Carrera entre workers: otro proceso abrió una sesión ACTIVA en el
+        # mismo punto entre nuestro check y el commit. El índice único parcial
+        # rechaza el duplicado; lo traducimos al error de negocio esperado (400).
+        db.rollback()
+        raise ValueError(
+            f"El punto de control '{data.punto_control}' acaba de ser ocupado "
+            f"por otra apertura concurrente. Intente de nuevo."
+        )
     db.refresh(sesion)
     return sesion
