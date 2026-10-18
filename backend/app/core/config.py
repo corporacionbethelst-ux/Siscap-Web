@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        # Coherencia con .env.example (v6.1): permite claves informativas como
+        # ENVIRONMENT sin romper la carga de configuración (extra="ignore").
+        extra = "ignore"
 
 
 @lru_cache()
