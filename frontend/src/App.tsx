@@ -1,19 +1,31 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useAuthStore } from './store/authStore';
 import Landing from './pages/Landing';
 import Proximamente from './pages/Proximamente';
 import Login from './pages/Login';
-import AperturaTurno from './pages/AperturaTurno';
-import Dashboard from './pages/Dashboard';
-import PersonalPage from './pages/Personal';
-import PersonalRegistro from './pages/PersonalRegistro';
-import Materiales from './pages/Materiales';
-import Visitantes from './pages/Visitantes';
-import Historial from './pages/Historial';
-import Admin from './pages/Admin';
-import Importacion from './pages/Importacion';
-import ConsultaDatos from './pages/ConsultaDatos';
+
+// OPTIMIZACIÓN (M-3): carga diferida de páginas pesadas por ruta.
+// Landing/Login/AperturaTurno quedan eager para el primer render;
+// el resto del bundle operativo se divide en chunks bajo demanda.
+const AperturaTurno = lazy(() => import('./pages/AperturaTurno'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const PersonalPage = lazy(() => import('./pages/Personal'));
+const PersonalRegistro = lazy(() => import('./pages/PersonalRegistro'));
+const Materiales = lazy(() => import('./pages/Materiales'));
+const Visitantes = lazy(() => import('./pages/Visitantes'));
+const Historial = lazy(() => import('./pages/Historial'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Importacion = lazy(() => import('./pages/Importacion'));
+const ConsultaDatos = lazy(() => import('./pages/ConsultaDatos'));
+
+function PageFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isChecking, checkAuth } = useAuthStore();
@@ -43,6 +55,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
   return (
     <BrowserRouter>
+      <Suspense fallback={<PageFallback />}>
       <Routes>
         {/* Portal público: selección de departamento (Unidad de Seguridad Integral) */}
         <Route path="/" element={<Landing />} />

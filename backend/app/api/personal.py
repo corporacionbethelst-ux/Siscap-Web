@@ -3,8 +3,16 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.crud import personal as crud_personal
 from app.schemas.personal import PersonalCreate, PersonalResponse, PersonalUpdate
+# FIX CRÍTICO (C1): las 3 rutas de /api/personal estaban SIN autenticación.
+# Se exige sesión JWT válida (cualquier rol autenticado) en todas ellas.
+from app.api.auth import get_current_user
+from app.models.models import Usuario
 
-router = APIRouter(prefix="/api/personal", tags=["Personal"])
+router = APIRouter(
+    prefix="/api/personal",
+    tags=["Personal"],
+    dependencies=[Depends(get_current_user)],
+)
 
 @router.get("/", response_model=list[PersonalResponse])
 def listar_personal(skip: int = 0, limit: int = 50, search: str = "", db: Session = Depends(get_db)):

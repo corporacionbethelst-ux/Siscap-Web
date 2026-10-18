@@ -12,28 +12,30 @@ def get_zonas(db: Session):
 
 def get_zonas_con_estado(db: Session):
     """Lista todas las zonas con información básica y cantidad de puntos.
-    NOTA: Las zonas ya no tienen estado 'en_uso' porque la restricción es por Punto de Control."""
+    NOTA: Las zonas ya no tienen estado 'en_uso' porque la restricción es por Punto de Control.
+    OPTIMIZACIÓN (M-2): antes ejecutaba 1 consulta COUNT por zona (N+1);
+    ahora un único GROUP BY para toda la lista."""
     zonas = db.query(Zona).order_by(Zona.nombre).all()
-    resultado = []
-    
-    for zona in zonas:
-        # Solo contamos cuántos puntos de control activos tiene asignados esta zona
-        total_puntos = db.query(func.count(PuntoControl.id)).filter(
-            PuntoControl.zona_id == zona.id,
-            PuntoControl.estatus == "ACTIVO"
-        ).scalar() or 0
-        
-        resultado.append({
+
+    conteo = dict(
+        db.query(PuntoControl.zona_id, func.count(PuntoControl.id))
+        .filter(PuntoControl.estatus == "ACTIVO")
+        .group_by(PuntoControl.zona_id)
+        .all()
+    )
+
+    return [
+        {
             "id": zona.id,
             "nombre": zona.nombre,
             "descripcion": zona.descripcion,
             "estatus": zona.estatus,
             "fecha_registro": zona.fecha_registro,
-            "total_puntos": total_puntos
+            "total_puntos": conteo.get(zona.id, 0),
             # Se eliminaron 'en_uso' y 'usuario_en_uso'
-        })
-    
-    return resultado
+        }
+        for zona in zonas
+    ]
 
 
 def get_zonas_disponibles(db: Session):
