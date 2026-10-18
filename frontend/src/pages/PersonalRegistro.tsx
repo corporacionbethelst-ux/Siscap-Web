@@ -23,7 +23,7 @@ export default function PersonalRegistro() {
     mutationFn: personalApi.crear,
     onSuccess: (data) => {
       toast.success(`✅ ${data.nombres} registrado correctamente`);
-      navigate('/personal');
+      navigate('/dept/proteccion-prevencion/personal');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Error al registrar');
@@ -42,7 +42,7 @@ export default function PersonalRegistro() {
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <button
-        onClick={() => navigate('/personal')}
+        onClick={() => navigate('/dept/proteccion-prevencion/personal')}
         className="flex items-center gap-2 text-slate-600 hover:text-slate-800 mb-4"
       >
         <ArrowLeft className="w-4 h-4" /> Volver al Control de Personal
@@ -120,7 +120,7 @@ export default function PersonalRegistro() {
           <div className="pt-4 flex gap-3">
             <button
               type="button"
-              onClick={() => navigate('/personal')}
+              onClick={() => navigate('/dept/proteccion-prevencion/personal')}
               className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-medium"
             >
               Cancelar

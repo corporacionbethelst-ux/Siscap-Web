@@ -61,8 +61,30 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/dept/:deptoId" element={<Proximamente />} />
 
-        {/* Módulo: Departamento de Protección y Prevención */}
+        {/* ============================================================
+            Módulo: Departamento de Protección y Prevención (DPP)
+            Rutas canónicas bajo /dept/proteccion-prevencion/*.
+            Las rutas cortas (/login, /dashboard...) se conservan como
+            alias de compatibilidad mediante el redirect en solitario.
+            ============================================================ */}
         <Route path="/login" element={<Login />} />
+        <Route
+          path="/dept/proteccion-prevencion/login"
+          element={<Navigate to="/login" replace />}
+        />
+
+        {/* Alias de compatibilidad → ruta canónica del módulo DPP */}
+        <Route path="/apertura-turno" element={<Navigate to="/dept/proteccion-prevencion" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/dept/proteccion-prevencion/dashboard" replace />} />
+        <Route path="/personal" element={<Navigate to="/dept/proteccion-prevencion/personal" replace />} />
+        <Route path="/materiales" element={<Navigate to="/dept/proteccion-prevencion/materiales" replace />} />
+        <Route path="/visitantes" element={<Navigate to="/dept/proteccion-prevencion/visitantes" replace />} />
+        <Route path="/historial" element={<Navigate to="/dept/proteccion-prevencion/historial" replace />} />
+        <Route path="/admin" element={<Navigate to="/dept/proteccion-prevencion/admin" replace />} />
+        <Route path="/importacion" element={<Navigate to="/dept/proteccion-prevencion/importacion" replace />} />
+        <Route path="/consulta" element={<Navigate to="/dept/proteccion-prevencion/consulta" replace />} />
+
+        {/* Rutas canónicas del módulo DPP */}
         <Route
           path="/dept/proteccion-prevencion"
           element={
@@ -72,31 +94,7 @@ function App() {
           }
         />
         <Route
-          path="/apertura-turno"
-          element={
-            <ProtectedRoute>
-              <AperturaTurno />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/personal"
-          element={
-            <ProtectedRoute>
-              <PersonalPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/personal/registro"
+          path="/dept/proteccion-prevencion/personal/registro"
           element={
             <ProtectedRoute>
               <PersonalRegistro />
@@ -104,7 +102,23 @@ function App() {
           }
         />
         <Route
-          path="/materiales"
+          path="/dept/proteccion-prevencion/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dept/proteccion-prevencion/personal"
+          element={
+            <ProtectedRoute>
+              <PersonalPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dept/proteccion-prevencion/materiales"
           element={
             <ProtectedRoute>
               <Materiales />
@@ -112,7 +126,7 @@ function App() {
           }
         />
         <Route
-          path="/visitantes"
+          path="/dept/proteccion-prevencion/visitantes"
           element={
             <ProtectedRoute>
               <Visitantes />
@@ -120,7 +134,7 @@ function App() {
           }
         />
         <Route
-          path="/historial"
+          path="/dept/proteccion-prevencion/historial"
           element={
             <ProtectedRoute>
               <Historial />
@@ -128,7 +142,7 @@ function App() {
           }
         />
         <Route
-          path="/admin"
+          path="/dept/proteccion-prevencion/admin"
           element={
             <ProtectedRoute>
               <Admin />
@@ -136,7 +150,7 @@ function App() {
           }
         />
         <Route
-          path="/importacion"
+          path="/dept/proteccion-prevencion/importacion"
           element={
             <ProtectedRoute>
               <Importacion />
@@ -144,7 +158,7 @@ function App() {
           }
         />
         <Route
-          path="/consulta"
+          path="/dept/proteccion-prevencion/consulta"
           element={
             <ProtectedRoute>
               <ConsultaDatos />

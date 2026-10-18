@@ -12,3 +12,9 @@ ENV/
 .idea/
 *.swp
 *.swo
+
+# Frontend
+node_modules/
+dist/
+.vite/
+frontend/node_modules/.vite/

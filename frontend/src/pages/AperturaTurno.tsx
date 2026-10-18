@@ -212,7 +212,7 @@ export default function AperturaTurno() {
       });
       setSesionActiva(sesion);
       toast.success(`✅ Turno abierto en ${zonaSeleccionada} - ${puntoControl}`);
-      navigate('/dashboard');
+      navigate('/dept/proteccion-prevencion/dashboard');
     } catch (error: any) {
       const msg = error.response?.data?.detail || 'Error al abrir sesión';
       toast.error(msg);

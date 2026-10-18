@@ -13,7 +13,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(username, password);
-      navigate('/apertura-turno');
+      navigate('/dept/proteccion-prevencion');
     } catch (error) {
       // El error ya se maneja con toast en el store
     }

@@ -66,7 +66,7 @@ export default function Dashboard() {
       toast.success('✅ Turno cerrado correctamente');
       limpiarSesionLocal();
       setMostrarModalCerrar(false);
-      navigate('/apertura-turno');
+      navigate('/dept/proteccion-prevencion');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Error al cerrar turno');
@@ -162,7 +162,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {/* Módulo: Control de Personal */}
           <button
-            onClick={() => navigate('/personal')}
+            onClick={() => navigate('/dept/proteccion-prevencion/personal')}
             className="bg-white rounded-xl shadow-sm p-6 text-left hover:shadow-md hover:border-blue-300 border-2 border-transparent transition-all"
           >
             <Users className="w-10 h-10 text-blue-600 mb-3" />
@@ -174,7 +174,7 @@ export default function Dashboard() {
 
           {/* Módulo: Control de Materiales */}
           <button
-            onClick={() => navigate('/materiales')}
+            onClick={() => navigate('/dept/proteccion-prevencion/materiales')}
             className="bg-white rounded-xl shadow-sm p-6 text-left hover:shadow-md hover:border-indigo-300 border-2 border-transparent transition-all"
           >
             <Package className="w-10 h-10 text-indigo-600 mb-3" />
@@ -186,7 +186,7 @@ export default function Dashboard() {
 
           {/* Módulo: Control de Visitantes */}
           <button
-            onClick={() => navigate('/visitantes')}
+            onClick={() => navigate('/dept/proteccion-prevencion/visitantes')}
             className="bg-white rounded-xl shadow-sm p-6 text-left hover:shadow-md hover:border-purple-300 border-2 border-transparent transition-all"
           >
             <DoorOpen className="w-10 h-10 text-purple-600 mb-3" />
@@ -198,7 +198,7 @@ export default function Dashboard() {
 
           {/* Módulo: Historial y Reportes */}
           <button
-            onClick={() => navigate('/historial')}
+            onClick={() => navigate('/dept/proteccion-prevencion/historial')}
             className="bg-white rounded-xl shadow-sm p-6 text-left hover:shadow-md hover:border-emerald-300 border-2 border-transparent transition-all"
           >
             <ClipboardList className="w-10 h-10 text-emerald-600 mb-3" />
@@ -210,7 +210,7 @@ export default function Dashboard() {
 
           {/* Módulo: Consulta de Datos (NUEVO) */}
           <button
-            onClick={() => navigate('/consulta')}
+            onClick={() => navigate('/dept/proteccion-prevencion/consulta')}
             className="bg-white rounded-xl shadow-sm p-6 text-left hover:shadow-md hover:border-sky-300 border-2 border-transparent transition-all"
           >
             <Search className="w-10 h-10 text-sky-600 mb-3" />
@@ -223,7 +223,7 @@ export default function Dashboard() {
           {/* Módulo: Importación Masiva (solo ADMIN) */}
           {user.rol === 'ADMIN' && (
             <button
-              onClick={() => navigate('/importacion')}
+              onClick={() => navigate('/dept/proteccion-prevencion/importacion')}
               className="bg-white rounded-xl shadow-sm p-6 text-left hover:shadow-md hover:border-cyan-300 border-2 border-transparent transition-all"
             >
               <Database className="w-10 h-10 text-cyan-600 mb-3" />
@@ -237,7 +237,7 @@ export default function Dashboard() {
           {/* Módulo: Panel de Administración (solo ADMIN) */}
           {user.rol === 'ADMIN' && (
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate('/dept/proteccion-prevencion/admin')}
               className="bg-white rounded-xl shadow-sm p-6 text-left hover:shadow-md hover:border-amber-300 border-2 border-transparent transition-all"
             >
               <Shield className="w-10 h-10 text-amber-600 mb-3" />

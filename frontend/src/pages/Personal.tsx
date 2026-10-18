@@ -24,7 +24,7 @@ export default function PersonalPage() {
   useEffect(() => {
     if (!sesionActiva) {
       toast.error('Debe abrir un turno primero');
-      navigate('/apertura-turno');
+      navigate('/dept/proteccion-prevencion');
     }
   }, [sesionActiva, navigate]);
 
@@ -58,7 +58,7 @@ export default function PersonalPage() {
       toast.error(msg);
       // Preguntar si desea registrar
       if (confirm(`${msg}. ¿Desea registrar esta cédula ahora?`)) {
-        navigate('/personal/registro', { state: { cedula: cedula.trim() } });
+        navigate('/dept/proteccion-prevencion/personal/registro', { state: { cedula: cedula.trim() } });
       }
     } finally {
       setBuscando(false);
@@ -92,7 +92,7 @@ export default function PersonalPage() {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Botón Volver al Dashboard */}
       <button
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate('/dept/proteccion-prevencion/dashboard')}
         className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-4 font-medium transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
@@ -143,7 +143,7 @@ export default function PersonalPage() {
             {buscando ? 'Buscando...' : <><SearchIcon className="w-5 h-5" /> BUSCAR</>}
           </button>
           <button
-            onClick={() => navigate('/personal/registro')}
+            onClick={() => navigate('/dept/proteccion-prevencion/personal/registro')}
             className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold flex items-center gap-2"
           >
             <Plus className="w-5 h-5" /> REGISTRAR NUEVO
