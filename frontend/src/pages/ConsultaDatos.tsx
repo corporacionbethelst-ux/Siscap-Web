@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { consultaApi, PersonalData, VehiculoData, VisitanteData } from '../services/consulta';
 import {
   ArrowLeft, Search, Users, Car, UserCheck, Eye, X,
-  Building, Phone, Calendar, Shield, Loader2, MapPin
+  Building, Phone, Calendar, Shield, Loader2
 } from 'lucide-react';
 
 type TabType = 'personal' | 'vehiculos' | 'visitantes';

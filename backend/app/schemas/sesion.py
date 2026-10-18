@@ -37,6 +37,14 @@ class AperturaSesionRequest(BaseModel):
     supervisor_cedula: str
     centralista_cedula: str
     forzar_zona: bool = False
+    razon_forzado: Optional[str] = None
+
+class CierreSesionRequest(BaseModel):
+    razon: Optional[str] = None
+
+class LiberacionPuntoRequest(BaseModel):
+    sesion_id: int
+    razon: str  # obligatoria: exigida por regla de negocio para ADMIN
 
 class SesionResponse(BaseModel):
     id: int

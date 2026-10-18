@@ -76,7 +76,7 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/login');
   };
 
   const handleConfirmarCierre = () => {

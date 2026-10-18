@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
-import { visitanteApi, MovimientoVisitante, Visitante } from '../services/visitante';
+import { visitanteApi, Visitante } from '../services/visitante';
 import { toast } from 'sonner';
 import {
   DoorOpen, LogIn, LogOut, ArrowLeft, Search, UserPlus,
-  Users, Phone, Building, Briefcase, AlertCircle, Loader2,
-  CheckCircle2, FileText, Car, MapPin
+  Users, Phone, Building, Briefcase, Loader2,
+  FileText, Car, MapPin
 } from 'lucide-react';
 
 export default function Visitantes() {

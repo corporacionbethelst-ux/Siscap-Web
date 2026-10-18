@@ -6,7 +6,7 @@ import { importacionApi, TipoImportacion, PreviewResponse, ResultadoImportacion,
 import { toast } from 'sonner';
 import {
   ArrowLeft, Upload, FileSpreadsheet, Eye, CheckCircle2, XCircle,
-  AlertCircle, Loader2, Clock, Database, Download, Trash2,
+  AlertCircle, Loader2, Database,
   FileText, TrendingUp, TrendingDown, SkipForward, History
 } from 'lucide-react';
 
@@ -253,7 +253,7 @@ export default function Importacion() {
 // ============================================================
 function VistaUpload({
   tipos, cargandoTipos, tipoSeleccionado, setTipoSeleccionado,
-  archivoSeleccionado, setArchivoSeleccionado,
+  archivoSeleccionado,
   getRootProps, getInputProps, isDragActive,
   onSubir, isUploading,
   historial, cargandoHistorial, onVerDetalle, getEstadoColor, getEstadoIcono

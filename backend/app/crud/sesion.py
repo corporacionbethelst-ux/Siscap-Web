@@ -1,6 +1,6 @@
 from datetime import datetime, date
 from sqlalchemy.orm import Session
-from app.models.models import Sesion, Personal, Turno
+from app.models.models import Sesion, Personal, Turno, Evento
 from app.utils.turnos import calcular_rango_turno
 
 
@@ -27,7 +27,8 @@ def obtener_semana_actual():
     return iso[1], iso[0]  # numero_semana, anio_semana
 
 
-def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar: bool = False):
+def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar: bool = False,
+                 razon_forzado: str = None):
     """Crea una nueva sesión validando que el PUNTO DE CONTROL no esté en uso."""
     
     # VALIDACIÓN CRÍTICA: Verificar que el PUNTO DE CONTROL no esté ocupado
@@ -44,10 +45,24 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
         )
     
     # Si se está forzando y el punto está ocupado, cerrar la sesión anterior
+    # y registrar la auditoría del override de ADMIN.
     if sesion_punto_ocupado and forzar:
         sesion_punto_ocupado.estado = "CERRADA_FORZADA"
         sesion_punto_ocupado.hora_fin = datetime.now()
         db.add(sesion_punto_ocupado)
+        db.add(Evento(
+            sesion_id=sesion_punto_ocupado.id,
+            usuario=usuario_nombre,
+            tipo_evento="SEGURIDAD",
+            accion="APERTURA_FORZADA",
+            detalle=(
+                f"Punto: {data.punto_control} | Se cerró sesión #"
+                f"{sesion_punto_ocupado.id} de {sesion_punto_ocupado.usuario_nombre} "
+                f"| Razón: {razon_forzado or 'sin razón registrada'}"
+            ),
+            fecha=date.today(),
+            hora=datetime.now().strftime("%H:%M:%S"),
+        ))
     
     # Buscar turno
     turno = db.query(Turno).filter(Turno.codigo == data.turno_codigo).first()

@@ -67,13 +67,29 @@ export const sesionApi = {
     supervisor_cedula: string;
     centralista_cedula: string;
     forzar_zona?: boolean;  // ← NUEVO
+    razon_forzado?: string; // ← NUEVO: obligatoria si forzar_zona=true (solo ADMIN)
   }) => {
     const response = await api.post<Sesion>('/api/sesion/apertura', data);
     return response.data;
   },
 
-  cerrarSesion: async (sesionId: number) => {
-    const response = await api.post(`/api/sesion/cerrar/${sesionId}`);
+  cerrarSesion: async (sesionId: number, razon?: string) => {
+    const response = await api.post(`/api/sesion/cerrar/${sesionId}`, { razon: razon ?? null });
     return response.data;
-  }
+  },
+
+  // ← NUEVO: liberación de puntos bloqueados (exclusivo ADMIN, razón obligatoria)
+  liberarPunto: async (sesionId: number, razon: string) => {
+    const response = await api.post('/api/sesion/liberar-punto', {
+      sesion_id: sesionId,
+      razon,
+    });
+    return response.data;
+  },
+
+  // ← NUEVO: listado de sesiones activas para ADMIN (gestión de liberación)
+  listarActivasAdmin: async () => {
+    const response = await api.get<Sesion[]>('/api/sesion/activas-admin');
+    return response.data;
+  },
 };

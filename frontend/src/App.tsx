@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuthStore } from './store/authStore';
+import Landing from './pages/Landing';
+import Proximamente from './pages/Proximamente';
 import Login from './pages/Login';
 import AperturaTurno from './pages/AperturaTurno';
 import Dashboard from './pages/Dashboard';
@@ -42,7 +44,20 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        {/* Portal público: selección de departamento (Unidad de Seguridad Integral) */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/dept/:deptoId" element={<Proximamente />} />
+
+        {/* Módulo: Departamento de Protección y Prevención */}
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/dept/proteccion-prevencion"
+          element={
+            <ProtectedRoute>
+              <AperturaTurno />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/apertura-turno"
           element={
