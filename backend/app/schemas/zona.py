@@ -22,6 +22,9 @@ class ZonaResponse(ZonaBase):
     id: int
     estatus: str
     fecha_registro: datetime
+    # Campos heredados del modelo antiguo "zona en uso" (obsoletos desde v6.0:
+    # el bloqueo es por PUNTO DE CONTROL, no por zona). Se conservan como
+    # opcionales con default para no romper clientes antiguos.
     en_uso: bool = False
     usuario_en_uso: Optional[str] = None
     sesion_id: Optional[int] = None

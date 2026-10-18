@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi, Usuario } from '../services/admin';
 import { zonaApi, Zona, PuntoControl, PuntoControlConEstado } from '../services/zona';
+import { sesionApi } from '../services/sesion';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Users, Settings, Clock, FileText, Plus, Edit2,
@@ -340,10 +341,20 @@ function GestionPuntosControl() {
   });
 
   const liberarMutation = useMutation({
-    mutationFn: ({ puntoId, razon }: { puntoId: number; razon: string }) =>
-      zonaApi.liberarPuntoControl(puntoId, razon),
+    // Migración a endpoint canónico (v6.1): POST /api/sesion/liberar-punto.
+    // El antiguo zonaApi.liberarPuntoControl quedó deprecado en el backend;
+    // este flujo resuelve primero la sesión ACTIVA del punto (garantizando
+    // auditoría LIBERACION_PUNTO y estado LIBERADA_ADMIN).
+    mutationFn: async ({ razon }: { puntoId: number; razon: string }) => {
+      const activas = await sesionApi.listarActivasAdmin();
+      const sesionActiva = activas.find((s) => s.punto_control === puntoALiberar?.nombre);
+      if (!sesionActiva) {
+        throw { response: { data: { detail: 'El punto de control no está ocupado' } } };
+      }
+      return sesionApi.liberarPunto(sesionActiva.id, razon);
+    },
     onSuccess: (data) => {
-      toast.success(`✅ Punto "${data.punto}" liberado correctamente`);
+      toast.success(`✅ Punto "${data.punto_control}" liberado correctamente`);
       queryClient.invalidateQueries({ queryKey: ['admin-puntos-control'] });
       queryClient.invalidateQueries({ queryKey: ['admin-sesiones'] });
       setPuntoALiberar(null);

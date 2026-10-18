@@ -158,13 +158,22 @@ def actualizar_punto_control(
 
 
 # ============================================================
-# NUEVO ENDPOINT: LIBERAR PUNTO DE CONTROL (SOLO ADMIN)
+# ENDPOINT DEPRECADO: LIBERAR PUNTO DE CONTROL (SOLO ADMIN)
 # ============================================================
+# ⚠️ DEPRECATED (v6.1): este endpoint era un DUPLICADO de
+# POST /api/sesion/liberar-punto (app/api/sesion.py) y NO registraba
+# el evento en la tabla de auditoría `eventos`, incumpliendo la regla de
+# negocio "Override ADMIN con auditoría". Se mantiene solo como fachada de
+# compatibilidad hacia atrás: delega en el endpoint canónico tras resolver
+# la sesión ACTIVA del punto. El frontend debe usar sesionApi.liberarPunto.
+from typing import Optional
+
+
 class LiberarPuntoRequest(BaseModel):
-    razon: str = "Liberación manual por administrador"
+    razon: Optional[str] = None
 
 
-@router.post("/puntos-control/{punto_id}/liberar")
+@router.post("/puntos-control/{punto_id}/liberar", deprecated=True)
 def liberar_punto_control(
     punto_id: int,
     data: LiberarPuntoRequest,
@@ -172,37 +181,48 @@ def liberar_punto_control(
     current_user: Usuario = Depends(verify_admin)
 ):
     """
-    Libera un punto de control ocupado.
-    Cierra forzosamente la sesión activa asociada y registra la razón en auditoría.
-    Solo accesible para ADMIN.
+    [DEPRECADO] Libera un punto de control ocupado delegando en el
+    endpoint canónico POST /api/sesion/liberar-punto, que sí escribe
+    el evento LIBERACION_PUNTO en la tabla `eventos`.
+    Solo ADMIN (verify_admin). Razón obligatoria (422 si falta o es vacía).
     """
-    from datetime import datetime
-    
-    # Buscar el punto de control
+    from app.api.sesion import liberar_punto as _liberar_canonico
+    from app.schemas.sesion import LiberacionPuntoRequest
+
+    if not data.razon or not data.razon.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="La razón de la liberación es obligatoria."
+        )
+
+    # Validar que el punto existe
     punto = db.query(PuntoControl).filter(PuntoControl.id == punto_id).first()
     if not punto:
         raise HTTPException(status_code=404, detail="Punto de control no encontrado")
-    
-    # Buscar la sesión activa en ese punto
+
+    # Resolver la sesión ACTIVA del punto (regla: una sola sesión activa por punto)
     sesion_activa = db.query(Sesion).filter(
         Sesion.punto_control == punto.nombre,
         Sesion.estado == "ACTIVA"
     ).first()
-    
+
     if not sesion_activa:
         raise HTTPException(status_code=400, detail="El punto de control no está ocupado")
-    
-    # Cerrar la sesión con estado especial
-    sesion_activa.estado = "LIBERADA_ADMIN"
-    sesion_activa.hora_fin = datetime.now()
-    db.add(sesion_activa)
-    db.commit()
-    
+
+    # Delegar en el endpoint canónico: estado LIBERADA_ADMIN + auditoría garantizados
+    resultado = _liberar_canonico(
+        LiberacionPuntoRequest(sesion_id=sesion_activa.id, razon=data.razon.strip()),
+        db=db,
+        current_user=current_user,
+    )
     return {
         "mensaje": "Punto de control liberado correctamente",
         "punto": punto.nombre,
         "sesion_anterior": sesion_activa.id,
         "usuario_anterior": sesion_activa.usuario_nombre,
         "liberado_por": current_user.nombre_completo,
-        "razon": data.razon
+        "razon": data.razon.strip(),
+        "estado": resultado["estado"],
+        "deprecado": True,
+        "reemplazo": "POST /api/sesion/liberar-punto",
     }

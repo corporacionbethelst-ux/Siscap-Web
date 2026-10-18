@@ -1,0 +1,21 @@
+# ============================================================
+# SISCAP Web — Frontend de PRODUCCIÓN (multi-stage: build Vite + Nginx)
+# Build:  docker build -f Dockerfile.prod -t siscap-frontend-prod ./frontend
+# ============================================================
+
+# --- Etapa 1: compilación TypeScript/Vite ---
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci
+COPY . .
+# Compila y falla el build si hay errores de tipos
+RUN npm run build
+
+# --- Etapa 2: servir estáticos con Nginx ---
+FROM nginx:1.27-alpine AS runtime
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=5s CMD wget -qO /dev/null http://localhost/ || exit 1
+CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,42 @@
+# ============================================================
+# SISCAP Web — Backend de PRODUCCIÓN (Gunicorn + Uvicorn workers)
+# Build:  docker build -f Dockerfile.prod -t siscap-backend-prod ./backend
+# ============================================================
+FROM python:3.11-slim AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+# Dependencias del sistema (gcc/libpq para psycopg2; curl para healthcheck)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc libpq-dev curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Gunicorn añadido solo en producción (no contamina requirements de dev)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt gunicorn==21.2.0
+
+# Código fuente
+COPY . .
+
+# Usuario sin privilegios
+RUN useradd --create-home --shell /bin/bash siscap \
+    && mkdir -p /app/uploads && chown -R siscap:siscap /app
+USER siscap
+
+EXPOSE 8000
+
+# 4 workers sync (bind local); tune con WEB_CONCURRENCY según CPU/DB pool.
+# --timeout 120: importaciones masivas UPSERT pueden tardar.
+CMD ["gunicorn", "app.main:app", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "4", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--timeout", "120", \
+     "--graceful-timeout", "30", \
+     "--keep-alive", "5", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-"]

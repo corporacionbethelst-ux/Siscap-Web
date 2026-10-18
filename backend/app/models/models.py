@@ -157,6 +157,15 @@ class Sesion(Base):
     movimientos_materiales = relationship("MovimientoMaterial", back_populates="sesion")
     movimientos_visitantes = relationship("MovimientoVisitante", back_populates="sesion")
 
+    __table_args__ = (
+        # RENDIMIENTO (M-1): bloqueo exclusivo por punto → consulta
+        # WHERE punto_control = ? AND estado = 'ACTIVA' en cada apertura/liberación.
+        Index("idx_sesion_punto_estado", "punto_control", "estado"),
+        # Reportes/historial: filtrado por rango de fechas y aislamiento por punto.
+        Index("idx_sesion_fecha_inicio", "hora_inicio"),
+        Index("idx_sesion_dia_operativo", "dia_operativo"),
+    )
+
 
 # ============================================================
 # AUDITORÍA DE EVENTOS
@@ -173,6 +182,11 @@ class Evento(Base):
     hora = Column(String(8), nullable=False)
 
     sesion = relationship("Sesion", back_populates="eventos")
+
+    __table_args__ = (
+        # RENDIMIENTO (M-1): trazabilidad por sesión en historial de auditoría.
+        Index("idx_evento_sesion_fecha", "sesion_id", "fecha"),
+    )
 
 
 # ============================================================
@@ -223,6 +237,12 @@ class MovimientoMaterial(Base):
 
     sesion = relationship("Sesion", back_populates="movimientos_materiales")
 
+    __table_args__ = (
+        # RENDIMIENTO (M-1): aislamiento por punto_control + filtros de reporte.
+        Index("idx_mov_mat_punto_fecha", "punto_control", "fecha"),
+        Index("idx_mov_mat_turno_fecha", "turno_codigo", "fecha"),
+    )
+
 
 class MovimientoVisitante(Base):
     __tablename__ = "movimientos_visitantes"
@@ -247,6 +267,12 @@ class MovimientoVisitante(Base):
     observacion = Column(Text)
 
     sesion = relationship("Sesion", back_populates="movimientos_visitantes")
+
+    __table_args__ = (
+        # RENDIMIENTO (M-1): aislamiento por punto_control + filtros de reporte.
+        Index("idx_mov_vis_punto_fecha", "punto_control", "fecha"),
+        Index("idx_mov_vis_turno_fecha", "turno_codigo", "fecha"),
+    )
 
 # ============================================================
 # ZONAS GEOGRÁFICAS
