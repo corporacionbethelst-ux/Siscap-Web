@@ -47,7 +47,9 @@ export default function AperturaTurno() {
   // ============================================================
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    // Volver al portal público tras cerrar sesión (antes iba a /login,
+    // que ahora es redundante: la Landing es la puerta de entrada).
+    navigate('/');
   };
 
   // ============================================================

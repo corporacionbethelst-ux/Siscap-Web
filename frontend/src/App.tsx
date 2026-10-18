@@ -2,12 +2,12 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 import { useAuthStore } from './store/authStore';
 import Landing from './pages/Landing';
-import Proximamente from './pages/Proximamente';
 import Login from './pages/Login';
 
 // OPTIMIZACIÓN (M-3): carga diferida de páginas pesadas por ruta.
 // Landing/Login/AperturaTurno quedan eager para el primer render;
 // el resto del bundle operativo se divide en chunks bajo demanda.
+const Proximamente = lazy(() => import('./pages/Proximamente'));
 const AperturaTurno = lazy(() => import('./pages/AperturaTurno'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const PersonalPage = lazy(() => import('./pages/Personal'));
@@ -46,7 +46,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    // Se preserva el destino original (incluye /dept/... si venía de la Landing)
+    // para volver allí tras autenticarse, en lugar de expulsar siempre al portal.
+    return <Navigate to="/login" replace state={{ from: window.location.pathname }} />;
   }
 
   return <>{children}</>;

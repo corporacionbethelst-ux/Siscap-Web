@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Shield, Lock, User, Loader2, ArrowLeft } from 'lucide-react';
 
@@ -8,12 +8,16 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await login(username, password);
-      navigate('/dept/proteccion-prevencion');
+      // Volver al destino solicitado (p. ej. /dept/proteccion-prevencion
+      // cuando el usuario hizo clic en "Ingresar al módulo" desde la Landing).
+      const from = (location.state as { from?: string } | null)?.from;
+      navigate(from && from !== '/login' ? from : '/dept/proteccion-prevencion');
     } catch (error) {
       // El error ya se maneja con toast en el store
     }
