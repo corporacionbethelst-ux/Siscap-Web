@@ -5,6 +5,7 @@ from app.crud import dashboard as crud_dashboard
 from app.schemas.dashboard import EstadisticasDashboard
 from app.models.models import Sesion, Usuario
 from app.api.auth import get_current_user
+from app.core.security import require_operativo  # noqa: F401 (consistencia de guardias)
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 

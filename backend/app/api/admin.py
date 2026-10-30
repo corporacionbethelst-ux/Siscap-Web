@@ -9,17 +9,9 @@ from app.schemas.admin import (
 )
 from app.models.models import Usuario
 from app.api.auth import get_current_user
+from app.core.security import verify_admin  # dependencia canónica (antes duplicada aquí)
 
 router = APIRouter(prefix="/api/admin", tags=["Administración"])
-
-# Middleware para verificar que el usuario sea ADMIN
-def verify_admin(current_user: Usuario = Depends(get_current_user)):
-    if current_user.rol != "ADMIN":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acceso denegado. Se requiere rol de administrador."
-        )
-    return current_user
 
 # ============================================================
 # USUARIOS

@@ -8,7 +8,7 @@ from app.schemas.sesion import (
     LiberacionPuntoRequest
 )
 from app.api.auth import oauth2_scheme  # noqa: F401 (mantener esquema para OpenAPI)
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_operativo
 from app.models.models import Usuario, Sesion, Evento
 
 router = APIRouter(prefix="/api/sesion", tags=["Sesión y Turnos"])
@@ -58,7 +58,7 @@ def validar_persona(cedula: str, db: Session = Depends(get_db)):
 def abrir_sesion(
     data: AperturaSesionRequest,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(require_operativo)
 ):
     # REGLA DE NEGOCIO: solo ADMIN puede forzar la apertura de un punto ocupado.
     # Si un no-ADMIN intenta forzar, se rechaza explícitamente (403).
@@ -94,7 +94,7 @@ def cerrar_sesion(
     sesion_id: int,
     data: CierreSesionRequest = CierreSesionRequest(),
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(require_operativo)
 ):
     """Cierra una sesión activa, liberando el punto de control. Registra auditoría."""
     from datetime import datetime

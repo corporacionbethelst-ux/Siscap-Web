@@ -9,6 +9,7 @@ from app.schemas.movimiento import (
 )
 from app.models.models import Sesion, Usuario
 from app.api.auth import get_current_user
+from app.core.security import require_operativo
 
 router = APIRouter(prefix="/api/movimientos", tags=["Movimientos"])
 
@@ -21,7 +22,7 @@ def registrar_movimiento(
     data: MovimientoPersonalCreate,
     sesion_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(require_operativo)
 ):
     if data.tipo_movimiento not in ["ENTRADA", "SALIDA"]:
         raise HTTPException(status_code=400, detail="Tipo de movimiento inválido")
@@ -76,7 +77,7 @@ def registrar_material(
     data: MovimientoMaterialCreate,
     sesion_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(require_operativo)
 ):
     if data.tipo_movimiento not in ["ENTRADA", "SALIDA"]:
         raise HTTPException(status_code=400, detail="Tipo de movimiento inválido")

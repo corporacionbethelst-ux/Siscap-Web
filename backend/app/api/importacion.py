@@ -30,11 +30,7 @@ router = APIRouter(prefix="/api/importacion", tags=["Importación Masiva"])
 _archivos_pendientes = {}
 
 
-def verify_admin(current_user: Usuario = Depends(get_current_user)):
-    """Solo administradores pueden importar datos."""
-    if current_user.rol != "ADMIN":
-        raise HTTPException(status_code=403, detail="Se requiere rol de administrador")
-    return current_user
+from app.core.security import verify_admin  # noqa: E402  (dependencia canónica)
 
 
 # ============================================================

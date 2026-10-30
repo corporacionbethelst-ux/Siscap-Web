@@ -9,6 +9,7 @@ from app.crud import historial as crud_historial
 from app.schemas.historial import HistorialFiltros, HistorialItem
 from app.models.models import Usuario
 from app.api.auth import get_current_user
+from app.core.security import require_operativo  # noqa: F401 (exportación solo lectura: OBSERVADOR_SALA permitido)
 
 router = APIRouter(prefix="/api/historial", tags=["Historial"])
 

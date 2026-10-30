@@ -9,14 +9,9 @@ from app.schemas.zona import (
 )
 from app.models.models import Usuario, PuntoControl, Sesion
 from app.api.auth import get_current_user
+from app.core.security import verify_admin  # dependencia canónica
 
 router = APIRouter(prefix="/api/zonas", tags=["Zonas Geográficas"])
-
-
-def verify_admin(current_user: Usuario = Depends(get_current_user)):
-    if current_user.rol != "ADMIN":
-        raise HTTPException(status_code=403, detail="Se requiere rol de administrador")
-    return current_user
 
 
 # ============================================================

@@ -14,6 +14,17 @@ settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
+# ============================================================
+# CATÁLOGO DE ROLES DEL SISTEMA (única fuente de verdad)
+#   ADMIN           : control total (CRUD, liberación forzada, importación)
+#   OPERADOR        : operativo — aislado a su punto_control activo
+#   OBSERVADOR_SALA : Sala Situacional — proyección GLOBAL de solo lectura
+#                     del módulo Protección y Prevención. Sin mutaciones.
+# ============================================================
+ROLES_VALIDOS = {"ADMIN", "OPERADOR", "OBSERVADOR_SALA"}
+ROL_OPERATIVO = "OPERADOR"
+ROL_SALA = "OBSERVADOR_SALA"
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -54,3 +65,35 @@ async def get_current_user(
     if usuario is None:
         raise credentials_exception
     return usuario
+
+
+def verify_admin(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+    """Dependencia canónica de rol ADMIN (antes duplicada en 3 routers).
+
+    Única fuente de verdad para rutas de escritura administrativa.
+    """
+    if current_user.rol != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso denegado. Se requiere rol de administrador.",
+        )
+    return current_user
+
+
+def require_operativo(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+    """Dependencia para MUTACIONES operativas del módulo Protección y Prevención.
+
+    Regla de modularidad: OBSERVADOR_SALA es estrictamente de SOLO LECTURA;
+    cualquier intento de escribir (crear/editar/eliminar) desde ese rol se
+    rechaza con 403 explícito. El OPERADOR conserva su flujo normal aislado
+    a su punto_control; el ADMIN mantiene control total.
+    """
+    if current_user.rol == ROL_SALA:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "Sala Situacional es un módulo de SOLO LECTURA: no puede crear, "
+                "actualizar ni eliminar datos de Protección y Prevención."
+            ),
+        )
+    return current_user
