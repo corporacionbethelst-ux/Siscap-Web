@@ -10,6 +10,16 @@ def buscar_historial(db: Session, filtros) -> List[dict]:
     """Búsqueda avanzada con filtros múltiples incluyendo zona y punto."""
     resultados = []
 
+    # Fix N+1 (roadmap #6): resuelve en UNA sola consulta el mapa
+    # cedula -> gerencia de todo el catálogo de Personal. Antes se ejecutaba
+    # db.query(Personal).filter(...).first() por cada fila devuelta cuando el
+    # filtro gerencia estaba activo (hasta 500 consultas por petición).
+    _gerencias_por_cedula: dict = {}
+    if filtros.gerencia and filtros.gerencia != "TODAS":
+        _gerencias_por_cedula = dict(
+            db.query(Personal.cedula, Personal.gerencia).all()
+        )
+
     fecha_desde = filtros.fecha_desde
     fecha_hasta = filtros.fecha_hasta
     tipo = filtros.tipo
@@ -49,8 +59,8 @@ def buscar_historial(db: Session, filtros) -> List[dict]:
 
         for r in query.order_by(MovimientoPersonal.fecha.desc(), MovimientoPersonal.hora.desc()).limit(500):
             if gerencia and gerencia != "TODAS":
-                persona = db.query(Personal).filter(Personal.cedula == r.cedula).first()
-                if not persona or persona.gerencia != gerencia:
+                # Uso del mapa precargado: O(1) por fila, sin queries extra.
+                if _gerencias_por_cedula.get(r.cedula) != gerencia:
                     continue
             if busqueda:
                 if busqueda not in (r.cedula or "").lower() and busqueda not in (r.nombres or "").lower():
