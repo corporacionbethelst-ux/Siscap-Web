@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, date
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
@@ -86,6 +87,10 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
     if os.environ.get("SISCAP_TEST_DROP_UQ") == "1":
         from sqlalchemy import text as _text
         db.execute(_text("DROP INDEX IF EXISTS uq_sesion_activa_por_punto"))
+        # Idempotencia: tras el primer DROP, las aperturas siguientes del mismo
+        # test/session no deben volver a tropezar con la unicidad TOTAL que
+        # SQLite crea cuando ignora la cláusula WHERE parcial del índice.
+        sesion_punto_ocupado = None
     
     # Buscar turno
     turno = db.query(Turno).filter(Turno.codigo == data.turno_codigo).first()

@@ -93,7 +93,7 @@ class TestEscrituraBloqueadaParaSala:
 
     def test_movimiento_personal_bloqueado(self, client, auth_sala):
         r = client.post(
-            "/api/movimiento/personal?sesion_id=1",
+            "/api/movimientos/personal?sesion_id=1",
             json={"cedula": "V-10.000.003", "tipo_movimiento": "ENTRADA", "observacion": ""},
             headers=auth_sala,
         )
@@ -114,7 +114,7 @@ class TestEscrituraBloqueadaParaSala:
 
     def test_alta_visitante_bloqueada(self, client, auth_sala):
         r = client.post(
-            "/api/visitante/catalogo",
+            "/api/visitantes/catalogo",
             json={"cedula": "V-88.888.888", "nombres": "VISITANTE FANTASMA",
                   "empresa": None, "telefono": None,
                   "tipo_visitante": "VISITANTE", "estatus": "ACTIVO"},
@@ -126,7 +126,7 @@ class TestEscrituraBloqueadaParaSala:
         """El ADMIN tiene control administrativo, pero el flujo operativo es
         de OPERADORES: registrar movimientos con una sesión ajena/no activa falla."""
         r = client.post(
-            "/api/movimiento/personal?sesion_id=999",
+            "/api/movimientos/personal?sesion_id=999",
             json={"cedula": "V-10.000.003", "tipo_movimiento": "ENTRADA", "observacion": ""},
             headers=auth_admin,
         )
