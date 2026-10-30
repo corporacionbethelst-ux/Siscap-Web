@@ -55,7 +55,16 @@ def _setup_schema():
 
 @pytest.fixture()
 def db():
-    """Sesión SQLAlchemy aislada por test (rollback final)."""
+    """Sesión SQLAlchemy aislada por test.
+
+    IMPORTANTE (arreglo de contaminación entre tests): el endpoint de apertura
+    ejecuta db.commit() dentro del request; al compartir la MISMA sesión ORM
+    entre el fixture y la app, ese commit persistía datos del test anterior en
+    la conexión StaticPool (p. ej. una sesión ACTIVA que hacía fallar la
+    apertura del test siguiente con 400 espurio). Por eso, además del rollback
+    final, se limpian las tablas de dominio AL INICIO de cada test (ver el
+    fixture `seed`), garantizando aislamiento real sin importar los commits.
+    """
     session = TestingSessionLocal()
     try:
         yield session
@@ -109,8 +118,19 @@ def client_lifespan():
 # ============================================================
 @pytest.fixture(autouse=True)
 def seed(_setup_schema, db):
-    """Datos mínimos necesarios para todos los escenarios."""
-    for modelo in (Personal, PuntoControl, Zona, Turno, Usuario):
+    """Limpieza total + datos mínimos necesarios para todos los escenarios.
+
+    Se borran TODAS las tablas del dominio (no solo las maestras) porque el
+    endpoint de apertura hace commit dentro del request y podría dejar filas
+    persistidas que contaminarían el test siguiente (bloqueo exclusivo falso).
+    """
+    from app.models.models import (
+        Sesion, Evento, MovimientoPersonal, MovimientoMaterial,
+        MovimientoVisitante,
+    )
+    db.expunge_all()
+    for modelo in (MovimientoVisitante, MovimientoMaterial, MovimientoPersonal,
+                   Evento, Sesion, Personal, PuntoControl, Zona, Turno, Usuario):
         db.query(modelo).delete()
     db.commit()
 

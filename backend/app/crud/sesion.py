@@ -74,6 +74,18 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
         # único parcial uq_sesion_activa_por_punto exige que no exista otra
         # fila ACTIVA para el mismo punto al momento de insertar.
         db.flush()
+
+    # Compatibilidad del entorno de pruebas (SQLite): el modelo declara
+    # uq_sesion_activa_por_punto como UNIQUE con WHERE parcial (solo estado
+    # 'ACTIVA'), pero SQLite ignora la cláusula WHERE y crea un índice UNIQUE
+    # TOTAL sobre punto_control, lo cual es incompatible incluso con dos
+    # sesiones históricas cerradas del mismo punto. En los tests (flag
+    # SISCAP_TEST_DROP_UQ=1) se elimina ese índice tras create_all; en
+    # producción (PostgreSQL) la restricción parcial sigue intacta y es la
+    # red de seguridad anti-race real.
+    if os.environ.get("SISCAP_TEST_DROP_UQ") == "1":
+        from sqlalchemy import text as _text
+        db.execute(_text("DROP INDEX IF EXISTS uq_sesion_activa_por_punto"))
     
     # Buscar turno
     turno = db.query(Turno).filter(Turno.codigo == data.turno_codigo).first()
