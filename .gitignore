@@ -1,20 +1,4 @@
-__pycache__/
-*.py[cod]
-*$py.class
-venv/
-.venv/
-env/
-ENV/
-.env
-.env.local
-.env.*.local
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Frontend
 node_modules/
-dist/
-.vite/
-frontend/node_modules/.vite/
+venv/
+__pycache__/
+*.pyc
