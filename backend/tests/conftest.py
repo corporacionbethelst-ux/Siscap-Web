@@ -21,6 +21,14 @@ os.environ.setdefault("ENVIRONMENT", "test")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest  # noqa: E402
+
+# Compatibilidad SQLite (ver app/crud/sesion.py): SQLite ignora la cláusula
+# WHERE del índice único parcial uq_sesion_activa_por_punto y lo crea como
+# UNIQUE TOTAL sobre punto_control, lo que rompería el bloqueo exclusivo por
+# estado en pruebas. Este flag hace que crud.sesion dropee ese índice en los
+# tests; la unicidad parcial real se valida en PostgreSQL (producción/CI).
+os.environ.setdefault("SISCAP_TEST_DROP_UQ", "1")
+
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import create_engine  # noqa: E402
 from sqlalchemy.orm import sessionmaker  # noqa: E402
