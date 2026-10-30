@@ -1,6 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
 from datetime import datetime
+
+# Roles aceptados en el CRUD administrativo (incluye el nuevo rol de Sala)
+_ROLES_PERMITIDOS = {"ADMIN", "OPERADOR", "OBSERVADOR_SALA"}
+
+
+def _validar_rol(v: str) -> str:
+    if v not in _ROLES_PERMITIDOS:
+        raise ValueError(f"Rol inválido '{v}'. Permitidos: {sorted(_ROLES_PERMITIDOS)}")
+    return v
 
 # ============================================================
 # USUARIOS
@@ -22,11 +31,21 @@ class UsuarioCreate(BaseModel):
     nombre_completo: str
     rol: str = "OPERADOR"
 
+    @field_validator("rol")
+    @classmethod
+    def _chk_rol(cls, v: str) -> str:
+        return _validar_rol(v)
+
 class UsuarioUpdate(BaseModel):
     nombre_completo: Optional[str] = None
     rol: Optional[str] = None
     estatus: Optional[str] = None
     password: Optional[str] = None
+
+    @field_validator("rol")
+    @classmethod
+    def _chk_rol(cls, v: Optional[str]) -> Optional[str]:
+        return _validar_rol(v) if v is not None else v
 
 # ============================================================
 # CATÁLOGOS

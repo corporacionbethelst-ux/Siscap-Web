@@ -9,6 +9,7 @@ from app.schemas.visitante import (
 )
 from app.models.models import Sesion, Usuario
 from app.api.auth import get_current_user
+from app.core.security import require_operativo
 
 router = APIRouter(prefix="/api/visitantes", tags=["Visitantes"])
 
@@ -32,7 +33,7 @@ def buscar_visitante(
 def crear_visitante(
     data: VisitanteCreate,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(require_operativo)
 ):
     existente = crud_visitante.get_visitante_by_cedula(db, data.cedula)
     if existente:
@@ -48,7 +49,7 @@ def registrar_movimiento(
     data: MovimientoVisitanteCreate,
     sesion_id: int,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(require_operativo)
 ):
     if data.tipo_movimiento not in ["ENTRADA", "SALIDA"]:
         raise HTTPException(status_code=400, detail="Tipo de movimiento inválido")

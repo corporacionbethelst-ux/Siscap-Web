@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.db.init_db import init_db
-from app.api import auth, personal, sesion, movimiento, visitante, dashboard, historial, admin, importacion, zona, consulta
+from app.api import auth, personal, sesion, movimiento, visitante, dashboard, historial, admin, importacion, zona, consulta, sala_situacional
 
 settings = get_settings()
 
@@ -44,6 +44,7 @@ app.include_router(admin.router)
 app.include_router(importacion.router)
 app.include_router(zona.router)
 app.include_router(consulta.router)
+app.include_router(sala_situacional.router)
 
 @app.get("/")
 def root():
