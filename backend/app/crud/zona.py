@@ -1,6 +1,7 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.models.models import Zona, PuntoControl, Sesion
+from sqlalchemy.orm import Session
+
+from app.models.models import PuntoControl, Sesion, Zona
 
 
 # ============================================================
@@ -44,7 +45,7 @@ def get_zonas_disponibles(db: Session):
         Sesion.zona.isnot(None)
     ).distinct().all()
     nombres_ocupados = [z[0] for z in zonas_ocupadas]
-    
+
     return db.query(Zona).filter(
         Zona.estatus == "ACTIVO",
         ~Zona.nombre.in_(nombres_ocupados)
@@ -63,7 +64,7 @@ def crear_zona(db: Session, nombre: str, descripcion: str = None):
     existente = db.query(Zona).filter(Zona.nombre == nombre.upper().strip()).first()
     if existente:
         raise ValueError(f"La zona '{nombre}' ya existe")
-    
+
     zona = Zona(
         nombre=nombre.upper().strip(),
         descripcion=descripcion,
@@ -80,11 +81,11 @@ def actualizar_zona(db: Session, zona_id: int, data) -> Zona:
     zona = get_zona_by_id(db, zona_id)
     if not zona:
         raise ValueError("Zona no encontrada")
-    
+
     update_data = data.model_dump(exclude_unset=True)
-    
+
     # Si cambia el nombre, validar que no exista otra con ese nombre
-    if "nombre" in update_data and update_data["nombre"]:
+    if update_data.get("nombre"):
         nuevo_nombre = update_data["nombre"].upper().strip()
         if nuevo_nombre != zona.nombre:
             existente = db.query(Zona).filter(
@@ -94,15 +95,15 @@ def actualizar_zona(db: Session, zona_id: int, data) -> Zona:
             if existente:
                 raise ValueError(f"Ya existe otra zona con el nombre '{nuevo_nombre}'")
             update_data["nombre"] = nuevo_nombre
-            
+
             # Actualizar también las sesiones que tenían el nombre antiguo
             db.query(Sesion).filter(Sesion.zona == zona.nombre).update(
                 {"zona": nuevo_nombre}, synchronize_session=False
             )
-    
+
     for field, value in update_data.items():
         setattr(zona, field, value)
-    
+
     db.commit()
     db.refresh(zona)
     return zona
@@ -129,7 +130,7 @@ def crear_punto_control(db: Session, nombre: str, zona_id: int = None):
     ).first()
     if existente:
         raise ValueError(f"El punto de control '{nombre}' ya existe")
-    
+
     punto = PuntoControl(
         nombre=nombre.upper().strip(),
         zona_id=zona_id,
@@ -146,10 +147,10 @@ def actualizar_punto_control(db: Session, punto_id: int, data) -> PuntoControl:
     punto = get_punto_control_by_id(db, punto_id)
     if not punto:
         raise ValueError("Punto de control no encontrado")
-    
+
     update_data = data.model_dump(exclude_unset=True)
-    
-    if "nombre" in update_data and update_data["nombre"]:
+
+    if update_data.get("nombre"):
         nuevo_nombre = update_data["nombre"].upper().strip()
         if nuevo_nombre != punto.nombre:
             existente = db.query(PuntoControl).filter(
@@ -159,10 +160,10 @@ def actualizar_punto_control(db: Session, punto_id: int, data) -> PuntoControl:
             if existente:
                 raise ValueError(f"Ya existe otro punto con el nombre '{nuevo_nombre}'")
             update_data["nombre"] = nuevo_nombre
-    
+
     for field, value in update_data.items():
         setattr(punto, field, value)
-    
+
     db.commit()
     db.refresh(punto)
     return punto
@@ -171,14 +172,14 @@ def get_puntos_control_con_estado(db: Session):
     """Lista todos los puntos de control con información de si están en uso."""
     puntos = db.query(PuntoControl).order_by(PuntoControl.nombre).all()
     resultado = []
-    
+
     for punto in puntos:
         # Buscar si hay una sesión ACTIVA en este punto de control
         sesion_activa = db.query(Sesion).filter(
             Sesion.punto_control == punto.nombre,
             Sesion.estado == "ACTIVA"
         ).first()
-        
+
         resultado.append({
             "id": punto.id,
             "nombre": punto.nombre,
@@ -190,5 +191,5 @@ def get_puntos_control_con_estado(db: Session):
             "sesion_id": sesion_activa.id if sesion_activa else None,
             "zona_en_uso": False  # Ya no se usa, pero se mantiene por compatibilidad
         })
-    
+
     return resultado

@@ -1,15 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.crud import sesion as crud_sesion
-from app.schemas.sesion import (
-    TurnoResponse, RangoTurnoResponse, ValidarPersonaResponse,
-    AperturaSesionRequest, SesionResponse, CierreSesionRequest,
-    LiberacionPuntoRequest
+
+from app.core.security import (  # noqa: F401 (oauth2_scheme se importa para el esquema OpenAPI)
+    get_current_user,
+    oauth2_scheme,
+    require_operativo,
 )
-from app.api.auth import oauth2_scheme  # noqa: F401 (mantener esquema para OpenAPI)
-from app.core.security import get_current_user, require_operativo
-from app.models.models import Usuario, Sesion, Evento
+from app.crud import sesion as crud_sesion
+from app.db.session import get_db
+from app.models.models import Evento, Sesion, Usuario
+from app.schemas.sesion import (
+    AperturaSesionRequest,
+    CierreSesionRequest,
+    LiberacionPuntoRequest,
+    RangoTurnoResponse,
+    SesionResponse,
+    TurnoResponse,
+    ValidarPersonaResponse,
+)
 
 router = APIRouter(prefix="/api/sesion", tags=["Sesión y Turnos"])
 

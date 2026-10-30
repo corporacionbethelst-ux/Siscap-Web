@@ -1,6 +1,6 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import date
+
+from pydantic import BaseModel
 
 
 class HistorialFiltros(BaseModel):
@@ -8,25 +8,25 @@ class HistorialFiltros(BaseModel):
     fecha_hasta: date
     tipo: str = "TODOS"
     movimiento: str = "TODOS"
-    zona: Optional[str] = None
-    punto_control: Optional[str] = None
-    gerencia: Optional[str] = None
-    empresa: Optional[str] = None
-    busqueda: Optional[str] = None
-    grupo_trabajo: Optional[str] = None
-    numero_semana: Optional[int] = None
+    zona: str | None = None
+    punto_control: str | None = None
+    gerencia: str | None = None
+    empresa: str | None = None
+    busqueda: str | None = None
+    grupo_trabajo: str | None = None
+    numero_semana: int | None = None
 
 
 class HistorialItem(BaseModel):
     fecha: date
     hora: str
     tipo: str
-    cedula: Optional[str] = None
-    nombre: Optional[str] = None
-    empresa_gerencia: Optional[str] = None
-    zona: Optional[str] = None
-    punto_control: Optional[str] = None
-    turno: Optional[str] = None
-    grupo: Optional[str] = None
-    semana: Optional[str] = None
+    cedula: str | None = None
+    nombre: str | None = None
+    empresa_gerencia: str | None = None
+    zona: str | None = None
+    punto_control: str | None = None
+    turno: str | None = None
+    grupo: str | None = None
+    semana: str | None = None
     movimiento: str

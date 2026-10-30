@@ -1,6 +1,6 @@
-from pydantic import BaseModel, field_validator
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel, field_validator
 
 # Roles aceptados en el CRUD administrativo (incluye el nuevo rol de Sala)
 _ROLES_PERMITIDOS = {"ADMIN", "OPERADOR", "OBSERVADOR_SALA"}
@@ -37,14 +37,14 @@ class UsuarioCreate(BaseModel):
         return _validar_rol(v)
 
 class UsuarioUpdate(BaseModel):
-    nombre_completo: Optional[str] = None
-    rol: Optional[str] = None
-    estatus: Optional[str] = None
-    password: Optional[str] = None
+    nombre_completo: str | None = None
+    rol: str | None = None
+    estatus: str | None = None
+    password: str | None = None
 
     @field_validator("rol")
     @classmethod
-    def _chk_rol(cls, v: Optional[str]) -> Optional[str]:
+    def _chk_rol(cls, v: str | None) -> str | None:
         return _validar_rol(v) if v is not None else v
 
 # ============================================================
@@ -67,15 +67,15 @@ class CatalogoResponse(BaseModel):
 class SesionResponse(BaseModel):
     id: int
     usuario_nombre: str
-    punto_control: Optional[str] = None
-    grupo_trabajo: Optional[str] = None
-    turno_codigo: Optional[str] = None
-    turno_nombre: Optional[str] = None
-    dia_operativo: Optional[str] = None
-    supervisor_nombre: Optional[str] = None
-    centralista_nombre: Optional[str] = None
+    punto_control: str | None = None
+    grupo_trabajo: str | None = None
+    turno_codigo: str | None = None
+    turno_nombre: str | None = None
+    dia_operativo: str | None = None
+    supervisor_nombre: str | None = None
+    centralista_nombre: str | None = None
     hora_inicio: datetime
-    hora_fin: Optional[datetime] = None
+    hora_fin: datetime | None = None
     estado: str
 
     class Config:
@@ -86,11 +86,11 @@ class SesionResponse(BaseModel):
 # ============================================================
 class EventoResponse(BaseModel):
     id: int
-    sesion_id: Optional[int] = None
-    usuario: Optional[str] = None
+    sesion_id: int | None = None
+    usuario: str | None = None
     tipo_evento: str
     accion: str
-    detalle: Optional[str] = None
+    detalle: str | None = None
     fecha: str
     hora: str
 

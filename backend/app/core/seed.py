@@ -1,6 +1,7 @@
-from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from app.models.models import Usuario, Turno, Zona, PuntoControl
+from sqlalchemy.orm import Session
+
+from app.models.models import Turno, Usuario, Zona
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -16,7 +17,7 @@ def seed_database(db: Session):
                 Turno(codigo="N", nombre="NOCTURNO (11PM-7AM)", hora_inicio="23:00", hora_fin="07:00", duracion_horas=8, cruza_medianoche=True, descripcion="Turno nocturno"),
             ]
             db.add_all(turnos)
-        
+
         # 2. Usuarios por defecto
         if db.query(Usuario).filter(Usuario.usuario == "admin").count() == 0:
             db.add(Usuario(usuario="admin", password=pwd_context.hash("admin123"), nombre_completo="Administrador del Sistema", rol="ADMIN"))
@@ -25,7 +26,7 @@ def seed_database(db: Session):
         # Usuario demo del módulo Sala Situacional (SOLO LECTURA global de DPP)
         if db.query(Usuario).filter(Usuario.usuario == "sala").count() == 0:
             db.add(Usuario(usuario="sala", password=pwd_context.hash("sala123"), nombre_completo="Observador Sala Situacional", rol="OBSERVADOR_SALA"))
-        
+
         # NUEVO: Zonas geográficas
         if db.query(Zona).count() == 0:
             zonas = [
@@ -36,7 +37,7 @@ def seed_database(db: Session):
                 Zona(nombre="EDIFICIO SEDE", descripcion="Edificio sede corporativo"),
                 Zona(nombre="TORRE CORPORATIVA", descripcion="Torre corporativa"),
             ]
-            db.add_all(zonas)   
+            db.add_all(zonas)
 
         db.commit()
         print("✅ Datos iniciales (seed) cargados correctamente")

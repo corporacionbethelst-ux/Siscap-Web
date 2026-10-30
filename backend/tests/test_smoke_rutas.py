@@ -13,7 +13,6 @@ import pytest
 
 from app.main import app as fastapi_app
 
-
 METODOS_HTTP = {"get", "post", "put", "patch", "delete"}
 
 

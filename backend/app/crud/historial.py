@@ -1,12 +1,16 @@
-from typing import List
+
 from sqlalchemy.orm import Session
+
 from app.models.models import (
-    MovimientoPersonal, MovimientoMaterial, MovimientoVisitante,
-    Personal, PuntoControl
+    MovimientoMaterial,
+    MovimientoPersonal,
+    MovimientoVisitante,
+    Personal,
+    PuntoControl,
 )
 
 
-def buscar_historial(db: Session, filtros) -> List[dict]:
+def buscar_historial(db: Session, filtros) -> list[dict]:
     """Búsqueda avanzada con filtros múltiples incluyendo zona y punto."""
     resultados = []
 

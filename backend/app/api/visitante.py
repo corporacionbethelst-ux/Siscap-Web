@@ -1,15 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.crud import visitante as crud_visitante
-from app.schemas.visitante import (
-    VisitanteCreate, VisitanteResponse,
-    MovimientoVisitanteCreate, MovimientoVisitanteResponse,
-    GerenciaResponse, EmpresaResponse
-)
-from app.models.models import Sesion, Usuario
+
 from app.api.auth import get_current_user
 from app.core.security import require_operativo
+from app.crud import visitante as crud_visitante
+from app.db.session import get_db
+from app.models.models import Sesion, Usuario
+from app.schemas.visitante import (
+    EmpresaResponse,
+    GerenciaResponse,
+    MovimientoVisitanteCreate,
+    MovimientoVisitanteResponse,
+    VisitanteCreate,
+    VisitanteResponse,
+)
 
 router = APIRouter(prefix="/api/visitantes", tags=["Visitantes"])
 

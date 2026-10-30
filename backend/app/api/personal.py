@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.crud import personal as crud_personal
-from app.schemas.personal import PersonalCreate, PersonalResponse, PersonalUpdate
+
 # FIX CRÍTICO (C1): las 3 rutas de /api/personal estaban SIN autenticación.
 # Se exige sesión JWT válida (cualquier rol autenticado) en todas ellas.
 from app.api.auth import get_current_user
 from app.core.security import require_operativo
+from app.crud import personal as crud_personal
+from app.db.session import get_db
 from app.models.models import Usuario
+from app.schemas.personal import PersonalCreate, PersonalResponse
 
 router = APIRouter(
     prefix="/api/personal",

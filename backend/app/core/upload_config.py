@@ -2,8 +2,8 @@
 Configuración y utilidades para el sistema de importación masiva.
 Gestiona las carpetas de uploads: pending, processed, failed.
 """
-import os
 from pathlib import Path
+
 from app.core.config import get_settings
 
 
@@ -14,18 +14,18 @@ def get_upload_paths() -> dict:
     """
     settings = get_settings()
     base_dir = Path(settings.UPLOAD_DIR)
-    
+
     paths = {
         "base": base_dir,
         "pending": base_dir / "pending",      # Archivos esperando procesamiento
         "processed": base_dir / "processed",  # Archivos procesados exitosamente
         "failed": base_dir / "failed",        # Archivos con errores
     }
-    
+
     # Crear todas las carpetas si no existen
     for path in paths.values():
         path.mkdir(parents=True, exist_ok=True)
-    
+
     return paths
 
 

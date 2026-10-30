@@ -1,13 +1,19 @@
 from datetime import timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+
 from app.core.config import get_settings
-from app.core.security import verify_password, create_access_token, oauth2_scheme, get_current_user
-from app.db.session import get_db
+from app.core.security import (
+    create_access_token,
+    get_current_user,
+    verify_password,
+)
 from app.crud.user import get_usuario_by_username
-from app.schemas.user import Token, UsuarioResponse
+from app.db.session import get_db
 from app.models.models import Usuario
+from app.schemas.user import Token, UsuarioResponse
 
 settings = get_settings()
 router = APIRouter(prefix="/api/auth", tags=["Autenticación"])
@@ -26,10 +32,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Usuario inactivo o bloqueado"
         )
-    
+
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": usuario.usuario, "rol": usuario.rol}, 
+        data={"sub": usuario.usuario, "rol": usuario.rol},
         expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}

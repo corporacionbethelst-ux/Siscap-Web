@@ -1,9 +1,19 @@
+
 from sqlalchemy import (
-    Column, Integer, String, Text, DateTime, Date, Boolean,
-    ForeignKey, Index, func, text
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    func,
+    text,
 )
 from sqlalchemy.orm import relationship
-from datetime import datetime
+
 from app.db.session import Base
 
 
@@ -314,21 +324,21 @@ class ImportacionLog(Base):
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     usuario_nombre = Column(String(150))
     fecha_importacion = Column(DateTime, default=func.now())
-    
+
     # Estadísticas del proceso
     total_filas = Column(Integer, default=0)
     insertados = Column(Integer, default=0)
     actualizados = Column(Integer, default=0)
     omitidos = Column(Integer, default=0)
     errores = Column(Integer, default=0)
-    
+
     # Detalles de errores (JSON)
     detalles_error = Column(Text)  # JSON string con lista de errores
-    
+
     # Estado y ubicación
     estado = Column(String(20), default="COMPLETADO")  # COMPLETADO, PARCIAL, FALLIDO
     ruta_archivo = Column(String(500))
     tamano_archivo_kb = Column(Integer, default=0)
-    
+
     # Tiempo de procesamiento
     tiempo_procesamiento_seg = Column(Integer, default=0)

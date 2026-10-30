@@ -1,15 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
-from app.db.session import get_db
-from app.crud import zona as crud_zona
-from app.schemas.zona import (
-    ZonaCreate, ZonaUpdate, ZonaResponse,
-    PuntoControlCreate, PuntoControlUpdate, PuntoControlResponse
-)
-from app.models.models import Usuario, PuntoControl, Sesion
+from sqlalchemy.orm import Session
+
 from app.api.auth import get_current_user
 from app.core.security import verify_admin  # dependencia canónica
+from app.crud import zona as crud_zona
+from app.db.session import get_db
+from app.models.models import PuntoControl, Sesion, Usuario
+from app.schemas.zona import (
+    PuntoControlCreate,
+    PuntoControlResponse,
+    PuntoControlUpdate,
+    ZonaCreate,
+    ZonaResponse,
+    ZonaUpdate,
+)
 
 router = APIRouter(prefix="/api/zonas", tags=["Zonas Geográficas"])
 
@@ -161,11 +166,10 @@ def actualizar_punto_control(
 # negocio "Override ADMIN con auditoría". Se mantiene solo como fachada de
 # compatibilidad hacia atrás: delega en el endpoint canónico tras resolver
 # la sesión ACTIVA del punto. El frontend debe usar sesionApi.liberarPunto.
-from typing import Optional
 
 
 class LiberarPuntoRequest(BaseModel):
-    razon: Optional[str] = None
+    razon: str | None = None
 
 
 @router.post("/puntos-control/{punto_id}/liberar", deprecated=True)

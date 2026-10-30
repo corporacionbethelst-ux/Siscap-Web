@@ -1,5 +1,6 @@
+
 from pydantic import BaseModel
-from typing import Optional
+
 
 class EstadisticasDashboard(BaseModel):
     total_personal: int

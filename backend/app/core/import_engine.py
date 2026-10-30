@@ -3,16 +3,23 @@ Motor de importación UPSERT (Insert or Update) usando PostgreSQL nativo.
 Procesa archivos fila por fila con lógica anti-duplicados robusta.
 """
 import json
-import time
 import re
-from typing import List, Dict, Tuple, Optional
-from sqlalchemy.orm import Session
+import time
+
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 from app.models.models import (
-    Personal, Vehiculo, Visitante,
-    PuntoControl, Gerencia, EmpresaForanea,
-    Condicion, Direccion, ImportacionLog, Zona
+    Condicion,
+    Direccion,
+    EmpresaForanea,
+    Gerencia,
+    ImportacionLog,
+    Personal,
+    PuntoControl,
+    Vehiculo,
+    Visitante,
+    Zona,
 )
 
 
@@ -34,8 +41,7 @@ def normalizar_cedula(cedula: str) -> str:
         return ""
     cedula = cedula.strip().upper()
     for prefijo in ["V-", "E-", "V ", "E ", "V:", "E:"]:
-        if cedula.startswith(prefijo):
-            cedula = cedula[len(prefijo):]
+        cedula = cedula.removeprefix(prefijo)
     return cedula.strip()
 
 
@@ -142,12 +148,12 @@ TIPOS_IMPORTACION = {
 }
 
 
-def mapear_columnas(columnas_archivo: List[str], tipo: str) -> Dict[str, Optional[str]]:
+def mapear_columnas(columnas_archivo: list[str], tipo: str) -> dict[str, str | None]:
     """Mapea las columnas del archivo, tolerante a sufijos numéricos (ej: Cédula__998)."""
     config = TIPOS_IMPORTACION.get(tipo)
     if not config:
         raise ValueError(f"Tipo de importación desconocido: {tipo}")
-    
+
     mapeo = {}
     columnas_normalizadas = {}
     for c in columnas_archivo:
@@ -157,7 +163,7 @@ def mapear_columnas(columnas_archivo: List[str], tipo: str) -> Dict[str, Optiona
         c_clean = re.sub(r'__\d+$', '', c_lower)
         c_clean = re.sub(r'_\d+$', '', c_clean)
         columnas_normalizadas[c_clean] = c
-    
+
     for campo_sistema, posibles_nombres in config["mapeo_columnas"].items():
         mapeo[campo_sistema] = None
         for nombre_posible in posibles_nombres:
@@ -167,14 +173,14 @@ def mapear_columnas(columnas_archivo: List[str], tipo: str) -> Dict[str, Optiona
     return mapeo
 
 
-def validar_columnas_requeridas(mapeo: Dict[str, Optional[str]], tipo: str) -> Tuple[bool, List[str]]:
+def validar_columnas_requeridas(mapeo: dict[str, str | None], tipo: str) -> tuple[bool, list[str]]:
     config = TIPOS_IMPORTACION[tipo]
     errores = [f"Columna requerida '{col_req}' no encontrada" for col_req in config["columnas_requeridas"] if not mapeo.get(col_req)]
     return len(errores) == 0, errores
 
 
 def procesar_importacion(
-    db: Session, tipo: str, filas: List[Dict], mapeo: Dict[str, Optional[str]],
+    db: Session, tipo: str, filas: list[dict], mapeo: dict[str, str | None],
     usuario_id: int, usuario_nombre: str, nombre_archivo: str, ruta_archivo: str, tamano_kb: int
 ) -> ImportacionLog:
     inicio_tiempo = time.time()
@@ -183,7 +189,7 @@ def procesar_importacion(
     omitidos = 0
     errores = 0
     detalles_error = []
-    
+
     for idx, fila in enumerate(filas, start=2):
         try:
             resultado = _procesar_fila(db, tipo, fila, mapeo)
@@ -193,11 +199,11 @@ def procesar_importacion(
                 actualizados += 1
             elif resultado == "SKIP":
                 omitidos += 1
-            
+
             # Commit cada 100 filas para liberar memoria y asegurar progreso
             if (insertados + actualizados + omitidos + errores) % 100 == 0:
                 db.commit()
-                
+
         except Exception as e:
             errores += 1
             print(f"❌ ERROR en fila {idx}: {e}")
@@ -207,18 +213,18 @@ def procesar_importacion(
                 "datos": {k: fila.get(v, "") for k, v in mapeo.items() if v}
             })
             db.rollback()  # Revierte solo el estado sucio de esta fila fallida
-    
+
     # Commit final de cualquier registro pendiente
     try:
         db.commit()
     except Exception as e:
         db.rollback()
         errores += 1
-        detalles_error.append({"fila": "FINAL", "error": f"Error en commit final: {str(e)}"})
+        detalles_error.append({"fila": "FINAL", "error": f"Error en commit final: {e!s}"})
 
     tiempo_total = int(time.time() - inicio_tiempo)
     estado = "COMPLETADO" if errores == 0 else ("PARCIAL" if (insertados + actualizados) > 0 else "FALLIDO")
-    
+
     log = ImportacionLog(
         nombre_archivo=nombre_archivo,
         tipo_importacion=tipo,
@@ -235,21 +241,21 @@ def procesar_importacion(
         tamano_archivo_kb=tamano_kb,
         tiempo_procesamiento_seg=tiempo_total
     )
-    
+
     db.add(log)
     db.commit()
     db.refresh(log)
     return log
 
 
-def _procesar_fila(db: Session, tipo: str, fila: Dict, mapeo: Dict[str, Optional[str]]) -> str:
+def _procesar_fila(db: Session, tipo: str, fila: dict, mapeo: dict[str, str | None]) -> str:
     valores = {campo: limpiar_texto(fila.get(col)) for campo, col in mapeo.items() if col}
-    
+
     config = TIPOS_IMPORTACION[tipo]
     for col_req in config["columnas_requeridas"]:
         if not valores.get(col_req):
             raise ValueError(f"Campo requerido '{col_req}' está vacío")
-    
+
     if tipo == "PERSONAL":
         return _upsert_personal(db, valores)
     elif tipo == "VEHICULOS":
@@ -266,21 +272,21 @@ def _procesar_fila(db: Session, tipo: str, fila: Dict, mapeo: Dict[str, Optional
         raise ValueError(f"Tipo no soportado: {tipo}")
 
 
-def _upsert_personal(db: Session, valores: Dict) -> str:
+def _upsert_personal(db: Session, valores: dict) -> str:
     cedula = normalizar_cedula(valores["cedula"])
     nombres = valores["nombres"].upper()
     empresa = valores.get("empresa", "").upper() or None
     gerencia = valores.get("gerencia", "").upper() or None
     tipo = valores.get("tipo", "INTERNO").upper()
     estatus = valores.get("estatus", "ACTIVO").upper()
-    
+
     # Verificamos si existe para saber si contar como INSERT o UPDATE
     existente = db.query(Personal).filter(Personal.cedula == cedula).first()
-    
+
     stmt = insert(Personal).values(
         cedula=cedula, nombres=nombres, empresa=empresa, gerencia=gerencia, tipo=tipo, estatus=estatus
     )
-    
+
     if existente:
         do_update = stmt.on_conflict_do_update(
             index_elements=['cedula'],
@@ -293,17 +299,17 @@ def _upsert_personal(db: Session, valores: Dict) -> str:
         return "INSERT"
 
 
-def _upsert_vehiculos(db: Session, valores: Dict) -> str:
+def _upsert_vehiculos(db: Session, valores: dict) -> str:
     placa = normalizar_placa(valores["placa"])
     existente = db.query(Vehiculo).filter(Vehiculo.placa == placa).first()
-    
+
     datos = {
         "placa": placa, "modelo": valores.get("modelo") or None, "marca": valores.get("marca") or None,
         "color": valores.get("color") or None, "serial": valores.get("serial") or None,
         "anio": valores.get("anio") or None, "condicion": valores.get("condicion") or None,
         "observacion": valores.get("observacion") or None
     }
-    
+
     stmt = insert(Vehiculo).values(**datos)
     if existente:
         db.execute(stmt.on_conflict_do_update(index_elements=['placa'], set_=datos))
@@ -313,18 +319,18 @@ def _upsert_vehiculos(db: Session, valores: Dict) -> str:
         return "INSERT"
 
 
-def _upsert_visitantes(db: Session, valores: Dict) -> str:
+def _upsert_visitantes(db: Session, valores: dict) -> str:
     cedula = normalizar_cedula(valores["cedula"])
     nombres = valores["nombres"].upper()
     existente = db.query(Visitante).filter(Visitante.cedula == cedula).first()
-    
+
     datos = {
         "cedula": cedula, "nombres": nombres,
         "empresa": valores.get("empresa", "").upper() or None,
         "telefono": valores.get("telefono") or None,
         "tipo_visitante": valores.get("tipo_visitante", "VISITANTE").upper()
     }
-    
+
     stmt = insert(Visitante).values(**datos)
     if existente:
         db.execute(stmt.on_conflict_do_update(index_elements=['cedula'], set_=datos))
@@ -334,7 +340,7 @@ def _upsert_visitantes(db: Session, valores: Dict) -> str:
         return "INSERT"
 
 
-def _upsert_catalogo(db: Session, tipo: str, valores: Dict) -> str:
+def _upsert_catalogo(db: Session, tipo: str, valores: dict) -> str:
     nombre = valores["nombre"].strip().upper()
     modelos = {
         "PUNTOS_CONTROL": PuntoControl, "GERENCIAS": Gerencia, "EMPRESAS_FORANEAS": EmpresaForanea,
@@ -342,18 +348,18 @@ def _upsert_catalogo(db: Session, tipo: str, valores: Dict) -> str:
     }
     modelo = modelos[tipo]
     existente = db.query(modelo).filter(modelo.nombre == nombre).first()
-    
+
     if existente:
         return "SKIP"
     else:
         db.execute(insert(modelo).values(nombre=nombre))
         return "INSERT"
 
-def _upsert_zonas(db: Session, valores: Dict) -> str:
+def _upsert_zonas(db: Session, valores: dict) -> str:
     """UPSERT para Zonas Geográficas (clave: nombre)."""
     nombre = valores["nombre"].strip().upper()
     descripcion = valores.get("descripcion", "").strip() or None
-    
+
     existente = db.query(Zona).filter(Zona.nombre == nombre).first()
     if existente:
         if descripcion:
@@ -365,11 +371,11 @@ def _upsert_zonas(db: Session, valores: Dict) -> str:
         return "INSERT"
 
 
-def _upsert_puntos_control(db: Session, valores: Dict) -> str:
+def _upsert_puntos_control(db: Session, valores: dict) -> str:
     """UPSERT para Puntos de Control con lookup automático de zona."""
     nombre = valores["nombre"].strip().upper()
     zona_nombre = valores.get("zona", "").strip().upper()
-    
+
     # Lookup de zona_id (si se especificó zona)
     zona_id = None
     if zona_nombre:
@@ -381,7 +387,7 @@ def _upsert_puntos_control(db: Session, valores: Dict) -> str:
                 f"La zona '{zona_nombre}' no existe. "
                 f"Importe primero el archivo de ZONAS."
             )
-    
+
     existente = db.query(PuntoControl).filter(PuntoControl.nombre == nombre).first()
     if existente:
         existente.zona_id = zona_id
@@ -390,7 +396,7 @@ def _upsert_puntos_control(db: Session, valores: Dict) -> str:
         db.add(PuntoControl(nombre=nombre, zona_id=zona_id, estatus="ACTIVO"))
         return "INSERT"
 
-def obtener_tipos_disponibles() -> List[Dict]:
+def obtener_tipos_disponibles() -> list[dict]:
     return [
         {"codigo": codigo, "nombre": config["nombre"], "descripcion": config["descripcion"],
          "columna_clave": config["columna_clave"], "columnas_requeridas": config["columnas_requeridas"]}

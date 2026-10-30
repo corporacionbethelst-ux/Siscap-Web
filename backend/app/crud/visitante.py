@@ -1,6 +1,14 @@
 from datetime import datetime
+
 from sqlalchemy.orm import Session
-from app.models.models import Visitante, MovimientoVisitante, Sesion, Gerencia, EmpresaForanea
+
+from app.models.models import (
+    EmpresaForanea,
+    Gerencia,
+    MovimientoVisitante,
+    Sesion,
+    Visitante,
+)
 
 
 # ============================================================

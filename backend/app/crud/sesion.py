@@ -1,14 +1,17 @@
 import os
-from datetime import datetime, date
+from datetime import date, datetime
+
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from app.models.models import Sesion, Personal, Turno, Evento
+
+from app.models.models import Evento, Personal, Sesion, Turno
 from app.utils.turnos import calcular_rango_turno
 
 
 def get_turnos_activos(db: Session):
-    return db.query(Turno).filter(Turno.activo == True).order_by(Turno.codigo).all()
+    # .is_(True) en vez de `== True`: equivalente en SQL (IS true, tolera NULL) y compatible con ruff E712.
+    return db.query(Turno).filter(Turno.activo.is_(True)).order_by(Turno.codigo).all()
 
 
 def validar_persona_por_cedula(db: Session, cedula: str):
@@ -33,7 +36,7 @@ def obtener_semana_actual():
 def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar: bool = False,
                  razon_forzado: str = None):
     """Crea una nueva sesión validando que el PUNTO DE CONTROL no esté en uso."""
-    
+
     # VALIDACIÓN CRÍTICA: Verificar que el PUNTO DE CONTROL no esté ocupado.
     # Nota de aislamiento (regla #1): se consulta por NOMBRE normalizado
     # (upper/strip) para que 'Macagua' y 'MACAGUA' referencien el mismo punto
@@ -44,14 +47,14 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
         func.upper(func.trim(Sesion.punto_control)) == nombre_punto,
         Sesion.estado == "ACTIVA"
     ).first()
-    
+
     if sesion_punto_ocupado and not forzar:
         raise ValueError(
             f"El punto de control '{data.punto_control}' ya está en uso por "
             f"{sesion_punto_ocupado.usuario_nombre} (sesión #{sesion_punto_ocupado.id}). "
             f"Si es una emergencia, un administrador puede forzar la apertura."
         )
-    
+
     # Si se está forzando y el punto está ocupado, cerrar la sesión anterior
     # y registrar la auditoría del override de ADMIN.
     if sesion_punto_ocupado and forzar:
@@ -91,7 +94,7 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
         # test/session no deben volver a tropezar con la unicidad TOTAL que
         # SQLite crea cuando ignora la cláusula WHERE parcial del índice.
         sesion_punto_ocupado = None
-    
+
     # Buscar turno
     turno = db.query(Turno).filter(Turno.codigo == data.turno_codigo).first()
     if not turno:

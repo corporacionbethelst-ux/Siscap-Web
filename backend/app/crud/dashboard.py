@@ -1,15 +1,20 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.orm import Session
+
 from app.models.models import (
-    Personal, Vehiculo, Visitante,
-    MovimientoPersonal, MovimientoMaterial, MovimientoVisitante,
-    Sesion
+    MovimientoMaterial,
+    MovimientoPersonal,
+    MovimientoVisitante,
+    Personal,
+    Sesion,
+    Vehiculo,
+    Visitante,
 )
 
 
 def obtener_estadisticas_dashboard(db: Session, sesion: Sesion):
     """Obtiene estadísticas del PUNTO DE CONTROL activo."""
-    
+
     # Totales de catálogos (globales, no cambian)
     total_personal = db.query(func.count(Personal.id)).scalar() or 0
     total_vehiculos = db.query(func.count(Vehiculo.id)).scalar() or 0
@@ -17,7 +22,7 @@ def obtener_estadisticas_dashboard(db: Session, sesion: Sesion):
 
     # FILTRADO POR PUNTO DE CONTROL ACTIVO
     punto = sesion.punto_control
-    
+
     entradas_personal = db.query(func.count(MovimientoPersonal.id)).filter(
         MovimientoPersonal.sesion_id == sesion.id,
         MovimientoPersonal.punto_control == punto,
