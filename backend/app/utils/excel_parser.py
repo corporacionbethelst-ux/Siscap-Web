@@ -14,11 +14,11 @@ def parse_excel_file(file_path: str, max_preview: int = 10) -> tuple[list[str], 
     - Lista de nombres de columnas detectadas
     - Lista de filas (como diccionarios)
     - Total de filas en el archivo
-    
+
     Args:
         file_path: Ruta al archivo
         max_preview: Máximo de filas a retornar (0 = todas)
-    
+
     Returns:
         (columnas, filas, total_filas)
     """
@@ -77,7 +77,7 @@ def _parse_excel(file_path: str, max_preview: int) -> tuple[list[str], list[dict
         encabezados_raw = next(filas_iter)
     except StopIteration:
         wb.close()
-        raise ValueError("El archivo está vacío")
+        raise ValueError("El archivo está vacío") from None
 
     columnas = [str(h).strip() if h else f"columna_{i}" for i, h in enumerate(encabezados_raw)]
 

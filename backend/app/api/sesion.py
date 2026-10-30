@@ -94,7 +94,7 @@ def abrir_sesion(
         )
         return sesion
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.post("/cerrar/{sesion_id}")

@@ -258,7 +258,11 @@ def padron_visitantes(
 ):
     """Registro reciente de visitantes (maestro Visitante)."""
     inicio, _fin = _rango_fechas(dias)
-    q = db.query(Visitante).filter(Visitante.fecha_registro >= inicio) if hasattr(Visitante, "fecha_registro") else db.query(Visitante)
+    q = (
+        db.query(Visitante).filter(Visitante.fecha_registro >= inicio)
+        if hasattr(Visitante, "fecha_registro")
+        else db.query(Visitante)
+    )
     if busqueda:
         like = f"%{busqueda}%"
         q = q.filter((Visitante.cedula.ilike(like)) | (Visitante.nombres.ilike(like)))

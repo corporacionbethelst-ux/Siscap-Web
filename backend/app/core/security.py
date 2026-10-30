@@ -60,7 +60,8 @@ async def get_current_user(
         if username is None:
             raise credentials_exception
     except Exception:
-        raise credentials_exception
+        # Token inválido/expirado/firmado distinto → credenciales no válidas (401).
+        raise credentials_exception from None
 
     usuario = db.query(Usuario).filter(Usuario.usuario == username).first()
     if usuario is None:

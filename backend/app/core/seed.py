@@ -11,21 +11,46 @@ def seed_database(db: Session):
         # 1. Turnos por defecto
         if db.query(Turno).count() == 0:
             turnos = [
-                Turno(codigo="24H", nombre="24 HORAS (7AM-7AM)", hora_inicio="07:00", hora_fin="07:00", duracion_horas=24, cruza_medianoche=True, descripcion="Jornada completa"),
-                Turno(codigo="D", nombre="DIURNO (7AM-3PM)", hora_inicio="07:00", hora_fin="15:00", duracion_horas=8, cruza_medianoche=False, descripcion="Turno diurno"),
-                Turno(codigo="V", nombre="VESPERTINO (3PM-11PM)", hora_inicio="15:00", hora_fin="23:00", duracion_horas=8, cruza_medianoche=False, descripcion="Turno vespertino"),
-                Turno(codigo="N", nombre="NOCTURNO (11PM-7AM)", hora_inicio="23:00", hora_fin="07:00", duracion_horas=8, cruza_medianoche=True, descripcion="Turno nocturno"),
+                Turno(
+                    codigo="24H", nombre="24 HORAS (7AM-7AM)", hora_inicio="07:00",
+                    hora_fin="07:00", duracion_horas=24, cruza_medianoche=True,
+                    descripcion="Jornada completa",
+                ),
+                Turno(
+                    codigo="D", nombre="DIURNO (7AM-3PM)", hora_inicio="07:00",
+                    hora_fin="15:00", duracion_horas=8, cruza_medianoche=False,
+                    descripcion="Turno diurno",
+                ),
+                Turno(
+                    codigo="V", nombre="VESPERTINO (3PM-11PM)", hora_inicio="15:00",
+                    hora_fin="23:00", duracion_horas=8, cruza_medianoche=False,
+                    descripcion="Turno vespertino",
+                ),
+                Turno(
+                    codigo="N", nombre="NOCTURNO (11PM-7AM)", hora_inicio="23:00",
+                    hora_fin="07:00", duracion_horas=8, cruza_medianoche=True,
+                    descripcion="Turno nocturno",
+                ),
             ]
             db.add_all(turnos)
 
         # 2. Usuarios por defecto
         if db.query(Usuario).filter(Usuario.usuario == "admin").count() == 0:
-            db.add(Usuario(usuario="admin", password=pwd_context.hash("admin123"), nombre_completo="Administrador del Sistema", rol="ADMIN"))
+            db.add(Usuario(
+                usuario="admin", password=pwd_context.hash("admin123"),
+                nombre_completo="Administrador del Sistema", rol="ADMIN",
+            ))
         if db.query(Usuario).filter(Usuario.usuario == "operador").count() == 0:
-            db.add(Usuario(usuario="operador", password=pwd_context.hash("operador123"), nombre_completo="Operador del Sistema", rol="OPERADOR"))
+            db.add(Usuario(
+                usuario="operador", password=pwd_context.hash("operador123"),
+                nombre_completo="Operador del Sistema", rol="OPERADOR",
+            ))
         # Usuario demo del módulo Sala Situacional (SOLO LECTURA global de DPP)
         if db.query(Usuario).filter(Usuario.usuario == "sala").count() == 0:
-            db.add(Usuario(usuario="sala", password=pwd_context.hash("sala123"), nombre_completo="Observador Sala Situacional", rol="OBSERVADOR_SALA"))
+            db.add(Usuario(
+                usuario="sala", password=pwd_context.hash("sala123"),
+                nombre_completo="Observador Sala Situacional", rol="OBSERVADOR_SALA",
+            ))
 
         # NUEVO: Zonas geográficas
         if db.query(Zona).count() == 0:

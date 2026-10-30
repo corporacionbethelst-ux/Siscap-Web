@@ -38,7 +38,7 @@ def crear_usuario(
     try:
         return crud_admin.crear_usuario(db, data)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 @router.put("/usuarios/{usuario_id}", response_model=UsuarioAdminResponse)
 def actualizar_usuario(
@@ -50,7 +50,7 @@ def actualizar_usuario(
     try:
         return crud_admin.actualizar_usuario(db, usuario_id, data)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 # ============================================================
 # CATÁLOGOS
@@ -71,7 +71,7 @@ def crear_punto_control(
     try:
         return crud_admin.crear_punto_control(db, data.nombre)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 @router.get("/gerencias", response_model=list[CatalogoResponse])
 def listar_gerencias(
@@ -89,7 +89,7 @@ def crear_gerencia(
     try:
         return crud_admin.crear_gerencia(db, data.nombre)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 @router.get("/empresas-foraneas", response_model=list[CatalogoResponse])
 def listar_empresas_foraneas(
@@ -107,7 +107,7 @@ def crear_empresa_foranea(
     try:
         return crud_admin.crear_empresa_foranea(db, data.nombre)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 # ============================================================
 # SESIONES
