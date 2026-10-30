@@ -18,16 +18,24 @@ Reglas de diseño (NO NEGOCIABLES):
        tablas con filtros opcionales, sin estado ni side-effects.
 """
 from datetime import date, timedelta
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.db.session import get_db
 from app.core.security import get_current_user
+from app.db.session import get_db
 from app.models.models import (
-    Usuario, Sesion, Evento, MovimientoPersonal, MovimientoMaterial,
-    MovimientoVisitante, Personal, Visitante, PuntoControl, Zona, Turno,
+    Evento,
+    MovimientoMaterial,
+    MovimientoPersonal,
+    MovimientoVisitante,
+    Personal,
+    PuntoControl,
+    Sesion,
+    Turno,
+    Usuario,
+    Visitante,
+    Zona,
 )
 
 router = APIRouter(prefix="/api/sala-situacional", tags=["Sala Situacional"])
@@ -105,9 +113,9 @@ def panorama(db: Session = Depends(get_db), current_user: Usuario = Depends(veri
 # ============================================================
 @router.get("/sesiones")
 def listar_sesiones(
-    estado: Optional[str] = Query(None, description="ACTIVA|CERRADA|CERRADA_FORZADA|LIBERADA_ADMIN"),
-    punto_control: Optional[str] = None,
-    zona: Optional[str] = None,
+    estado: str | None = Query(None, description="ACTIVA|CERRADA|CERRADA_FORZADA|LIBERADA_ADMIN"),
+    punto_control: str | None = None,
+    zona: str | None = None,
     dias: int = Query(7, ge=1, le=365),
     limite: int = Query(200, ge=1, le=1000),
     db: Session = Depends(get_db),
@@ -147,9 +155,9 @@ def listar_sesiones(
 # ============================================================
 @router.get("/movimientos")
 def movimientos_unificados(
-    tipo: Optional[str] = Query(None, description="PERSONAL|MATERIALES|VISITANTES (vacío = todos)"),
-    punto_control: Optional[str] = None,
-    cedula: Optional[str] = None,
+    tipo: str | None = Query(None, description="PERSONAL|MATERIALES|VISITANTES (vacío = todos)"),
+    punto_control: str | None = None,
+    cedula: str | None = None,
     dias: int = Query(1, ge=1, le=365),
     limite: int = Query(300, ge=1, le=2000),
     db: Session = Depends(get_db),
@@ -221,7 +229,7 @@ def movimientos_unificados(
 # ============================================================
 @router.get("/personal")
 def padron_personal(
-    busqueda: Optional[str] = None,
+    busqueda: str | None = None,
     limite: int = Query(200, ge=1, le=1000),
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(verify_sala),
@@ -242,14 +250,14 @@ def padron_personal(
 
 @router.get("/visitantes")
 def padron_visitantes(
-    busqueda: Optional[str] = None,
+    busqueda: str | None = None,
     dias: int = Query(7, ge=1, le=365),
     limite: int = Query(200, ge=1, le=1000),
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(verify_sala),
 ):
     """Registro reciente de visitantes (maestro Visitante)."""
-    inicio, fin = _rango_fechas(dias)
+    inicio, _fin = _rango_fechas(dias)
     q = db.query(Visitante).filter(Visitante.fecha_registro >= inicio) if hasattr(Visitante, "fecha_registro") else db.query(Visitante)
     if busqueda:
         like = f"%{busqueda}%"
@@ -263,8 +271,8 @@ def padron_visitantes(
 
 @router.get("/eventos")
 def auditoria_eventos(
-    tipo_evento: Optional[str] = Query(None, description="APERTURA_SESION|CIERRE_SESION|LIBERACION_PUNTO|..."),
-    sesion_id: Optional[int] = None,
+    tipo_evento: str | None = Query(None, description="APERTURA_SESION|CIERRE_SESION|LIBERACION_PUNTO|..."),
+    sesion_id: int | None = None,
     dias: int = Query(7, ge=1, le=365),
     limite: int = Query(300, ge=1, le=1000),
     db: Session = Depends(get_db),

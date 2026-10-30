@@ -1,15 +1,16 @@
 import csv
 import io
-from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, Query
+
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.crud import historial as crud_historial
-from app.schemas.historial import HistorialFiltros, HistorialItem
-from app.models.models import Usuario
+
 from app.api.auth import get_current_user
 from app.core.security import require_operativo  # noqa: F401 (exportación solo lectura: OBSERVADOR_SALA permitido)
+from app.crud import historial as crud_historial
+from app.db.session import get_db
+from app.models.models import Usuario
+from app.schemas.historial import HistorialFiltros, HistorialItem
 
 router = APIRouter(prefix="/api/historial", tags=["Historial"])
 

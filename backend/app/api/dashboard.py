@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.crud import dashboard as crud_dashboard
-from app.schemas.dashboard import EstadisticasDashboard
-from app.models.models import Sesion, Usuario
+
 from app.api.auth import get_current_user
 from app.core.security import require_operativo  # noqa: F401 (consistencia de guardias)
+from app.crud import dashboard as crud_dashboard
+from app.db.session import get_db
+from app.models.models import Sesion, Usuario
+from app.schemas.dashboard import EstadisticasDashboard
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 

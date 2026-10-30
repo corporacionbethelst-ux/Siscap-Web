@@ -9,7 +9,6 @@ Cubre las reglas de negocio de modularidad:
        "SOLO LECTURA") — ni siquiera por endpoints que heredan get_current_user.
     5. El router de Sala solo expone métodos GET (no existen POST/PUT/DELETE).
 """
-from tests.conftest import token_for
 
 SALA_ENDPOINTS = [
     "/api/sala-situacional/panorama",

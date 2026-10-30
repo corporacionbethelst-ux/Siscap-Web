@@ -1,0 +1,19 @@
+# Configuración de ruff para SISCAP Web (backend FastAPI)
+line-length = 120
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "RUF"]
+ignore = [
+    # B008: Depends(...) en argumentos por defecto es el patrón idiomático de FastAPI.
+    "B008",
+    # BLE001: except amplios tolerados en bordes de importación/auditoría (ya loguean).
+    "BLE001",
+    # RUF013: implicit Optional — requeriría reescribir decenas de firmas pydantic.
+    "RUF013",
+    # SIM102: ifs colapsables — preferencia de legibilidad existente.
+    "SIM102",
+]
+
+[lint.per-file-ignores]
+"tests/*" = ["RUF100"]

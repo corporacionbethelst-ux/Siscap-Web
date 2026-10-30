@@ -1,15 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.crud import admin as crud_admin
-from app.schemas.admin import (
-    UsuarioAdminResponse, UsuarioCreate, UsuarioUpdate,
-    CatalogoResponse, CatalogoBase,
-    SesionResponse, EventoResponse
+
+from app.core.security import (
+    verify_admin,  # dependencia canónica (antes duplicada aquí)
 )
+from app.crud import admin as crud_admin
+from app.db.session import get_db
 from app.models.models import Usuario
-from app.api.auth import get_current_user
-from app.core.security import verify_admin  # dependencia canónica (antes duplicada aquí)
+from app.schemas.admin import (
+    CatalogoBase,
+    CatalogoResponse,
+    EventoResponse,
+    SesionResponse,
+    UsuarioAdminResponse,
+    UsuarioCreate,
+    UsuarioUpdate,
+)
 
 router = APIRouter(prefix="/api/admin", tags=["Administración"])
 

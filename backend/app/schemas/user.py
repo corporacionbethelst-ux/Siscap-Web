@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel
+
 
 class UsuarioBase(BaseModel):
     usuario: str
@@ -12,10 +13,10 @@ class UsuarioCreate(UsuarioBase):
     password: str
 
 class UsuarioUpdate(BaseModel):
-    nombre_completo: Optional[str] = None
-    rol: Optional[str] = None
-    estatus: Optional[str] = None
-    password: Optional[str] = None
+    nombre_completo: str | None = None
+    rol: str | None = None
+    estatus: str | None = None
+    password: str | None = None
 
 class UsuarioResponse(UsuarioBase):
     id: int
@@ -29,4 +30,4 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    usuario: Optional[str] = None
+    usuario: str | None = None

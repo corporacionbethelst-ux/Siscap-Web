@@ -20,7 +20,7 @@ os.environ.setdefault("ENVIRONMENT", "test")
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import pytest  # noqa: E402
+import pytest
 
 # Compatibilidad SQLite (ver app/crud/sesion.py): SQLite ignora la cláusula
 # WHERE del índice único parcial uq_sesion_activa_por_punto y lo crea como
@@ -29,18 +29,21 @@ import pytest  # noqa: E402
 # tests; la unicidad parcial real se valida en PostgreSQL (producción/CI).
 os.environ.setdefault("SISCAP_TEST_DROP_UQ", "1")
 
-from fastapi.testclient import TestClient  # noqa: E402
-from sqlalchemy import create_engine  # noqa: E402
-from sqlalchemy.orm import sessionmaker  # noqa: E402
-from sqlalchemy.pool import StaticPool  # noqa: E402
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from app.db.session import Base, get_db  # noqa: E402
-from app.models.models import (  # noqa: E402
-    Usuario, Turno, Personal, Zona, PuntoControl,
+from app.core.security import get_password_hash
+from app.db.session import Base, get_db
+from app.main import app as fastapi_app
+from app.models.models import (
+    Personal,
+    PuntoControl,
+    Turno,
+    Usuario,
+    Zona,
 )
-from app.core.security import get_password_hash  # noqa: E402
-from app.main import app as fastapi_app  # noqa: E402
-
 
 # ============================================================
 # Base de datos de prueba (SQLite en memoria compartida)
@@ -133,8 +136,11 @@ def seed(_setup_schema, db):
     persistidas que contaminarían el test siguiente (bloqueo exclusivo falso).
     """
     from app.models.models import (
-        Sesion, Evento, MovimientoPersonal, MovimientoMaterial,
+        Evento,
+        MovimientoMaterial,
+        MovimientoPersonal,
         MovimientoVisitante,
+        Sesion,
     )
     db.expunge_all()
     for modelo in (MovimientoVisitante, MovimientoMaterial, MovimientoPersonal,

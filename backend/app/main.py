@@ -1,9 +1,24 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.api import (
+    admin,
+    auth,
+    consulta,
+    dashboard,
+    historial,
+    importacion,
+    movimiento,
+    personal,
+    sala_situacional,
+    sesion,
+    visitante,
+    zona,
+)
 from app.core.config import get_settings
 from app.db.init_db import init_db
-from app.api import auth, personal, sesion, movimiento, visitante, dashboard, historial, admin, importacion, zona, consulta, sala_situacional
 
 settings = get_settings()
 

@@ -1,9 +1,9 @@
 """
 Schemas Pydantic para el sistema de importación masiva.
 """
-from pydantic import BaseModel
-from typing import Optional, List, Any
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class TipoImportacion(BaseModel):
@@ -11,7 +11,7 @@ class TipoImportacion(BaseModel):
     codigo: str
     nombre: str
     descripcion: str
-    columnas_requeridas: List[str]
+    columnas_requeridas: list[str]
     columna_clave: str  # Campo único para UPSERT (ej: cedula, placa)
 
 
@@ -20,7 +20,7 @@ class PreviewFila(BaseModel):
     numero_fila: int
     datos: dict
     es_valida: bool = True
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class PreviewResponse(BaseModel):
@@ -29,9 +29,9 @@ class PreviewResponse(BaseModel):
     nombre_archivo: str
     tipo_importacion: str
     total_filas: int
-    filas_preview: List[PreviewFila]
-    columnas_detectadas: List[str]
-    advertencias: List[str] = []
+    filas_preview: list[PreviewFila]
+    columnas_detectadas: list[str]
+    advertencias: list[str] = []
 
 
 class ResultadoImportacion(BaseModel):
@@ -45,7 +45,7 @@ class ResultadoImportacion(BaseModel):
     omitidos: int
     errores: int
     estado: str
-    detalles_error: List[dict] = []
+    detalles_error: list[dict] = []
     tiempo_procesamiento_seg: int
 
 
@@ -54,7 +54,7 @@ class ImportacionLogResponse(BaseModel):
     id: int
     nombre_archivo: str
     tipo_importacion: str
-    usuario_nombre: Optional[str] = None
+    usuario_nombre: str | None = None
     fecha_importacion: datetime
     total_filas: int
     insertados: int
@@ -74,5 +74,5 @@ class UploadResponse(BaseModel):
     archivo_id: str
     nombre_archivo: str
     tamano_kb: int
-    tipo_detectado: Optional[str] = None
+    tipo_detectado: str | None = None
     mensaje: str

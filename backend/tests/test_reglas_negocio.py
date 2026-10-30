@@ -9,7 +9,7 @@ Reglas de negocio críticas del módulo Protección y Prevención.
        estado LIBERADA_ADMIN + evento LIBERACION_PUNTO.
     #5 Cierre normal: estado CERRADA + evento CIERRE_SESION; solo dueño o ADMIN.
 """
-from app.models.models import Sesion, Evento
+from app.models.models import Evento, Sesion
 
 
 def _abrir(client, headers, payload):

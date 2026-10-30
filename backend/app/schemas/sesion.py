@@ -1,6 +1,7 @@
+from datetime import date, datetime
+
 from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime, date
+
 
 class TurnoResponse(BaseModel):
     id: int
@@ -11,7 +12,7 @@ class TurnoResponse(BaseModel):
     duracion_horas: int
     cruza_medianoche: bool
     activo: bool
-    descripcion: Optional[str] = None
+    descripcion: str | None = None
 
     class Config:
         from_attributes = True
@@ -24,10 +25,10 @@ class RangoTurnoResponse(BaseModel):
 
 class ValidarPersonaResponse(BaseModel):
     encontrado: bool
-    cedula: Optional[str] = None
-    nombres: Optional[str] = None
-    empresa: Optional[str] = None
-    gerencia: Optional[str] = None
+    cedula: str | None = None
+    nombres: str | None = None
+    empresa: str | None = None
+    gerencia: str | None = None
 
 class AperturaSesionRequest(BaseModel):
     zona: str
@@ -37,10 +38,10 @@ class AperturaSesionRequest(BaseModel):
     supervisor_cedula: str
     centralista_cedula: str
     forzar_zona: bool = False
-    razon_forzado: Optional[str] = None
+    razon_forzado: str | None = None
 
 class CierreSesionRequest(BaseModel):
-    razon: Optional[str] = None
+    razon: str | None = None
 
 class LiberacionPuntoRequest(BaseModel):
     sesion_id: int
@@ -49,7 +50,7 @@ class LiberacionPuntoRequest(BaseModel):
 class SesionResponse(BaseModel):
     id: int
     usuario_nombre: str
-    zona: Optional[str] = None
+    zona: str | None = None
     punto_control: str
     grupo_trabajo: str
     turno_codigo: str

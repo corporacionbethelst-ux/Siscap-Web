@@ -1,12 +1,13 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel
+
 
 class PersonalBase(BaseModel):
     cedula: str
     nombres: str
-    empresa: Optional[str] = None
-    gerencia: Optional[str] = None
+    empresa: str | None = None
+    gerencia: str | None = None
     tipo: str = "INTERNO"
     estatus: str = "ACTIVO"
 
@@ -14,11 +15,11 @@ class PersonalCreate(PersonalBase):
     pass
 
 class PersonalUpdate(BaseModel):
-    nombres: Optional[str] = None
-    empresa: Optional[str] = None
-    gerencia: Optional[str] = None
-    tipo: Optional[str] = None
-    estatus: Optional[str] = None
+    nombres: str | None = None
+    empresa: str | None = None
+    gerencia: str | None = None
+    tipo: str | None = None
+    estatus: str | None = None
 
 class PersonalResponse(PersonalBase):
     id: int

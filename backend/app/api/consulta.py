@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.models.models import Personal, Vehiculo, Visitante, Usuario
+
 from app.api.auth import get_current_user
+from app.db.session import get_db
+from app.models.models import Personal, Usuario, Vehiculo, Visitante
 
 router = APIRouter(prefix="/api/consulta", tags=["Consulta de Datos"])
 

@@ -1,11 +1,11 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class ZonaBase(BaseModel):
     nombre: str
-    descripcion: Optional[str] = None
+    descripcion: str | None = None
 
 
 class ZonaCreate(ZonaBase):
@@ -13,9 +13,9 @@ class ZonaCreate(ZonaBase):
 
 
 class ZonaUpdate(BaseModel):
-    nombre: Optional[str] = None
-    descripcion: Optional[str] = None
-    estatus: Optional[str] = None
+    nombre: str | None = None
+    descripcion: str | None = None
+    estatus: str | None = None
 
 
 class ZonaResponse(ZonaBase):
@@ -26,8 +26,8 @@ class ZonaResponse(ZonaBase):
     # el bloqueo es por PUNTO DE CONTROL, no por zona). Se conservan como
     # opcionales con default para no romper clientes antiguos.
     en_uso: bool = False
-    usuario_en_uso: Optional[str] = None
-    sesion_id: Optional[int] = None
+    usuario_en_uso: str | None = None
+    sesion_id: int | None = None
     total_puntos: int = 0  # ← NUEVO: Cantidad de puntos asignados
 
     class Config:
@@ -36,7 +36,7 @@ class ZonaResponse(ZonaBase):
 
 class PuntoControlBase(BaseModel):
     nombre: str
-    zona_id: Optional[int] = None
+    zona_id: int | None = None
 
 
 class PuntoControlCreate(PuntoControlBase):
@@ -44,17 +44,17 @@ class PuntoControlCreate(PuntoControlBase):
 
 
 class PuntoControlUpdate(BaseModel):
-    nombre: Optional[str] = None
-    zona_id: Optional[int] = None
-    estatus: Optional[str] = None
+    nombre: str | None = None
+    zona_id: int | None = None
+    estatus: str | None = None
 
 
 class PuntoControlResponse(BaseModel):
     id: int
     nombre: str
     estatus: str
-    zona_id: Optional[int] = None
-    zona_nombre: Optional[str] = None
+    zona_id: int | None = None
+    zona_nombre: str | None = None
 
     class Config:
         from_attributes = True

@@ -1,6 +1,15 @@
 from datetime import datetime
+
 from sqlalchemy.orm import Session
-from app.models.models import MovimientoPersonal, MovimientoMaterial, Personal, Sesion, Vehiculo
+
+from app.models.models import (
+    MovimientoMaterial,
+    MovimientoPersonal,
+    Personal,
+    Sesion,
+    Vehiculo,
+)
+
 
 # ============================================================
 # MOVIMIENTOS DE PERSONAL

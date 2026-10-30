@@ -1,15 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.db.session import get_db
-from app.crud import movimiento as crud_movimiento
-from app.schemas.movimiento import (
-    MovimientoPersonalCreate, MovimientoPersonalResponse,
-    MovimientoMaterialCreate, MovimientoMaterialResponse,
-    VehiculoResponse
-)
-from app.models.models import Sesion, Usuario
+
 from app.api.auth import get_current_user
 from app.core.security import require_operativo
+from app.crud import movimiento as crud_movimiento
+from app.db.session import get_db
+from app.models.models import Sesion, Usuario
+from app.schemas.movimiento import (
+    MovimientoMaterialCreate,
+    MovimientoMaterialResponse,
+    MovimientoPersonalCreate,
+    MovimientoPersonalResponse,
+    VehiculoResponse,
+)
 
 router = APIRouter(prefix="/api/movimientos", tags=["Movimientos"])
 

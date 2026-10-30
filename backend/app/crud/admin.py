@@ -1,10 +1,16 @@
 from sqlalchemy.orm import Session
+
+from app.core.security import get_password_hash
 from app.models.models import (
-    Usuario, PuntoControl, Gerencia, EmpresaForanea,
-    Sesion, Evento
+    EmpresaForanea,
+    Evento,
+    Gerencia,
+    PuntoControl,
+    Sesion,
+    Usuario,
 )
 from app.schemas.admin import UsuarioCreate, UsuarioUpdate
-from app.core.security import get_password_hash
+
 
 # ============================================================
 # USUARIOS
@@ -20,7 +26,7 @@ def crear_usuario(db: Session, data: UsuarioCreate):
     existente = db.query(Usuario).filter(Usuario.usuario == data.usuario).first()
     if existente:
         raise ValueError("El usuario ya existe")
-    
+
     usuario = Usuario(
         usuario=data.usuario,
         password=get_password_hash(data.password),
@@ -37,18 +43,18 @@ def actualizar_usuario(db: Session, usuario_id: int, data: UsuarioUpdate):
     usuario = get_usuario_by_id(db, usuario_id)
     if not usuario:
         raise ValueError("Usuario no encontrado")
-    
+
     update_data = data.dict(exclude_unset=True)
-    
+
     # Si hay contraseña, hashearla
-    if "password" in update_data and update_data["password"]:
+    if update_data.get("password"):
         update_data["password"] = get_password_hash(update_data["password"])
     elif "password" in update_data:
         del update_data["password"]
-    
+
     for field, value in update_data.items():
         setattr(usuario, field, value)
-    
+
     db.commit()
     db.refresh(usuario)
     return usuario

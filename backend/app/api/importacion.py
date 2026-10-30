@@ -1,28 +1,36 @@
 """
 Endpoints REST para el sistema de importación masiva.
 """
-import os
-import uuid
 import shutil
+import uuid
 from pathlib import Path
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
+
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
+from app.core.import_engine import (
+    TIPOS_IMPORTACION,
+    mapear_columnas,
+    obtener_tipos_disponibles,
+    procesar_importacion,
+    validar_columnas_requeridas,
+)
+from app.core.upload_config import (
+    get_upload_paths,
+    validate_file_extension,
+    validate_file_size,
+)
 from app.db.session import get_db
 from app.models.models import ImportacionLog, Usuario
-from app.api.auth import get_current_user
-from app.core.upload_config import (
-    get_upload_paths, validate_file_extension, validate_file_size
-)
-from app.utils.excel_parser import parse_excel_file, detectar_tipo_por_columnas
-from app.core.import_engine import (
-    mapear_columnas, validar_columnas_requeridas,
-    procesar_importacion, obtener_tipos_disponibles, TIPOS_IMPORTACION
-)
 from app.schemas.importacion import (
-    UploadResponse, PreviewResponse, PreviewFila,
-    ResultadoImportacion, ImportacionLogResponse, TipoImportacion
+    ImportacionLogResponse,
+    PreviewFila,
+    PreviewResponse,
+    ResultadoImportacion,
+    TipoImportacion,
+    UploadResponse,
 )
+from app.utils.excel_parser import detectar_tipo_por_columnas, parse_excel_file
 
 router = APIRouter(prefix="/api/importacion", tags=["Importación Masiva"])
 
@@ -30,7 +38,7 @@ router = APIRouter(prefix="/api/importacion", tags=["Importación Masiva"])
 _archivos_pendientes = {}
 
 
-from app.core.security import verify_admin  # noqa: E402  (dependencia canónica)
+from app.core.security import verify_admin
 
 
 # ============================================================
@@ -50,26 +58,26 @@ async def upload_archivo(
     es_valido, error_msg = validate_file_extension(archivo.filename)
     if not es_valido:
         raise HTTPException(status_code=400, detail=error_msg)
-    
+
     # Leer contenido para validar tamaño
     contenido = await archivo.read()
     tamano_bytes = len(contenido)
-    
+
     es_valido, error_msg = validate_file_size(tamano_bytes)
     if not es_valido:
         raise HTTPException(status_code=400, detail=error_msg)
-    
+
     # Generar ID único para el archivo
     archivo_id = str(uuid.uuid4())
-    
+
     # Guardar en carpeta pending
     paths = get_upload_paths()
     nombre_seguro = f"{archivo_id}_{archivo.filename}"
     ruta_destino = paths["pending"] / nombre_seguro
-    
+
     with open(ruta_destino, "wb") as f:
         f.write(contenido)
-    
+
     # Detectar tipo automáticamente si no se especificó
     tipo_detectado = tipo_sugerido
     if not tipo_detectado:
@@ -78,7 +86,7 @@ async def upload_archivo(
             tipo_detectado = detectar_tipo_por_columnas(columnas)
         except Exception:
             tipo_detectado = None
-    
+
     # Registrar en memoria para el preview
     _archivos_pendientes[archivo_id] = {
         "ruta": str(ruta_destino),
@@ -86,7 +94,7 @@ async def upload_archivo(
         "tamano_kb": tamano_bytes // 1024,
         "tipo_detectado": tipo_detectado
     }
-    
+
     return UploadResponse(
         archivo_id=archivo_id,
         nombre_archivo=archivo.filename,
@@ -111,28 +119,28 @@ def preview_archivo(
     """
     if archivo_id not in _archivos_pendientes:
         raise HTTPException(status_code=404, detail="Archivo no encontrado o expirado")
-    
+
     if tipo not in TIPOS_IMPORTACION:
         raise HTTPException(status_code=400, detail=f"Tipo inválido: {tipo}")
-    
+
     info = _archivos_pendientes[archivo_id]
-    
+
     try:
         columnas, filas_preview, total_filas = parse_excel_file(info["ruta"], max_preview=10)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error al leer archivo: {str(e)}")
-    
+        raise HTTPException(status_code=400, detail=f"Error al leer archivo: {e!s}")
+
     # Mapear columnas
     mapeo = mapear_columnas(columnas, tipo)
     es_valido, errores = validar_columnas_requeridas(mapeo, tipo)
-    
+
     if not es_valido:
         raise HTTPException(status_code=400, detail={
             "mensaje": "El archivo no tiene las columnas requeridas",
             "errores": errores,
             "columnas_detectadas": columnas
         })
-    
+
     # Convertir filas a PreviewFila
     filas_preview_obj = []
     for idx, fila in enumerate(filas_preview, start=2):
@@ -141,22 +149,22 @@ def preview_archivo(
         error_fila = None
         campo_clave = TIPOS_IMPORTACION[tipo]["columna_clave"]
         col_clave_archivo = mapeo.get(campo_clave)
-        
+
         if col_clave_archivo and not fila.get(col_clave_archivo, "").strip():
             fila_valida = False
             error_fila = f"Campo clave '{campo_clave}' vacío"
-        
+
         filas_preview_obj.append(PreviewFila(
             numero_fila=idx,
             datos=fila,
             es_valida=fila_valida,
             error=error_fila
         ))
-    
+
     advertencias = []
     if total_filas > 1000:
         advertencias.append(f"Archivo grande: {total_filas} filas. El procesamiento puede tardar.")
-    
+
     return PreviewResponse(
         archivo_id=archivo_id,
         nombre_archivo=info["nombre_original"],
@@ -181,34 +189,32 @@ def procesar_archivo(
     """
     Confirma y procesa el archivo, ejecutando UPSERT en la base de datos.
     """
-    import traceback
-    import shutil
     import json
-    from pathlib import Path
+    import traceback
 
     if archivo_id not in _archivos_pendientes:
         raise HTTPException(status_code=404, detail="Archivo no encontrado o expirado")
-    
+
     if tipo not in TIPOS_IMPORTACION:
         raise HTTPException(status_code=400, detail=f"Tipo inválido: {tipo}")
-    
+
     info = _archivos_pendientes[archivo_id]
     ruta_archivo = info["ruta"]
-    
+
     try:
         # Leer todas las filas
-        columnas, filas, total_filas = parse_excel_file(ruta_archivo, max_preview=0)
-        
+        columnas, filas, _total_filas = parse_excel_file(ruta_archivo, max_preview=0)
+
         # Mapear columnas
         mapeo = mapear_columnas(columnas, tipo)
         es_valido, errores = validar_columnas_requeridas(mapeo, tipo)
-        
+
         if not es_valido:
             raise HTTPException(status_code=400, detail={
                 "mensaje": "Columnas requeridas no encontradas",
                 "errores": errores
             })
-        
+
         # Procesar importación
         log = procesar_importacion(
             db=db,
@@ -221,15 +227,15 @@ def procesar_archivo(
             ruta_archivo=ruta_archivo,
             tamano_kb=info["tamano_kb"]
         )
-        
+
         # Mover archivo según resultado
         paths = get_upload_paths()
         destino = paths["processed"] if log.estado in ["COMPLETADO", "PARCIAL"] else paths["failed"]
         shutil.move(ruta_archivo, str(destino / Path(ruta_archivo).name))
-        
+
         # Limpiar de memoria
         del _archivos_pendientes[archivo_id]
-        
+
         return ResultadoImportacion(
             log_id=log.id,
             nombre_archivo=log.nombre_archivo,
@@ -243,14 +249,14 @@ def procesar_archivo(
             detalles_error=json.loads(log.detalles_error) if log.detalles_error else [],
             tiempo_procesamiento_seg=log.tiempo_procesamiento_seg
         )
-    
+
     except HTTPException:
         raise
     except Exception as e:
         # Capturar el error real y mostrarlo en los logs de Docker
         error_trace = traceback.format_exc()
         print(f"❌ ERROR CRÍTICO EN IMPORTACIÓN:\n{error_trace}")
-        raise HTTPException(status_code=500, detail=f"Error interno al procesar: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error interno al procesar: {e!s}")
 
 
 # ============================================================
@@ -280,9 +286,9 @@ def obtener_detalle(
     log = db.query(ImportacionLog).filter(ImportacionLog.id == log_id).first()
     if not log:
         raise HTTPException(status_code=404, detail="Importación no encontrada")
-    
+
     detalles = __import__("json").loads(log.detalles_error) if log.detalles_error else []
-    
+
     return {
         "id": log.id,
         "nombre_archivo": log.nombre_archivo,
