@@ -22,6 +22,9 @@ def seed_database(db: Session):
             db.add(Usuario(usuario="admin", password=pwd_context.hash("admin123"), nombre_completo="Administrador del Sistema", rol="ADMIN"))
         if db.query(Usuario).filter(Usuario.usuario == "operador").count() == 0:
             db.add(Usuario(usuario="operador", password=pwd_context.hash("operador123"), nombre_completo="Operador del Sistema", rol="OPERADOR"))
+        # Usuario demo del módulo Sala Situacional (SOLO LECTURA global de DPP)
+        if db.query(Usuario).filter(Usuario.usuario == "sala").count() == 0:
+            db.add(Usuario(usuario="sala", password=pwd_context.hash("sala123"), nombre_completo="Observador Sala Situacional", rol="OBSERVADOR_SALA"))
         
         # NUEVO: Zonas geográficas
         if db.query(Zona).count() == 0:

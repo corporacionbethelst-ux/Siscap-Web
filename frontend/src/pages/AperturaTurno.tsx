@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { sesionApi } from '../services/sesion';
 import { zonaApi, Zona, PuntoControl } from '../services/zona';
@@ -18,6 +18,17 @@ interface PuntoControlConEstado extends PuntoControl {
 
 export default function AperturaTurno() {
   const { user, setSesionActiva, logout } = useAuthStore();
+  const location = useLocation();
+
+  // Aviso de acceso restringido (p. ej. rebote desde Sala Situacional por
+  // guard de roles en App.tsx). Se muestra una sola vez y se limpia el state.
+  useEffect(() => {
+    const denied = (location.state as { denied?: string } | null)?.denied;
+    if (denied) {
+      toast.error(denied);
+      window.history.replaceState({}, '');
+    }
+  }, [location.state]);
   const navigate = useNavigate();
 
   const [zonas, setZonas] = useState<Zona[]>([]);

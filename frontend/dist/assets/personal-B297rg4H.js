@@ -1,0 +1,1 @@
+import{h as s}from"./index-DIXws7Xc.js";const n={listar:async(a="")=>(await s.get("/api/personal/",{params:{search:a,limit:100}})).data,buscar:async a=>(await s.get(`/api/personal/buscar/${a}`)).data,crear:async a=>(await s.post("/api/personal/",a)).data};export{n as p};

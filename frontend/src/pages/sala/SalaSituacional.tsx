@@ -66,15 +66,18 @@ export default function SalaSituacional() {
   const [diasEv, setDiasEv] = useState(7);
   const [tipoEv, setTipoEv] = useState('');
 
-  // Guard de acceso: solo ADMIN / OBSERVADOR_SALA
+  // Guard de acceso: solo ADMIN / OBSERVADOR_SALA.
+  // El destino es el módulo operativo DPP (NUNCA la Landing '/'), porque al
+  // caer en '/' con sesión activa no había forma de reintentar el ingreso y
+  // el usuario percibía que "el botón del landing no entra" al módulo.
   useEffect(() => {
     if (!user) {
       checkAuth();
       return;
     }
     if (user.rol !== 'ADMIN' && user.rol !== 'OBSERVADOR_SALA') {
-      toast.error('Acceso restringido a Sala Situacional (perfil OBSERVADOR_SALA o ADMIN)');
-      navigate('/', { replace: true });
+      toast.error('Acceso restringido a Sala Situacional (perfil OBSERVADOR_SALA o ADMIN). Ingrese a Protección y Prevención.');
+      navigate('/dept/proteccion-prevencion', { replace: true });
     }
   }, [user, checkAuth, navigate]);
 
