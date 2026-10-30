@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import {
   LogOut, Shield, Users, Package, DoorOpen, ClipboardList,
   Clock, MapPin, TrendingUp, Building2, Car, UserCheck, UserX,
-  Database, Globe, Search, AlertTriangle, Loader2, CheckCircle2
+  Database, Globe, Search, AlertTriangle, Loader2, CheckCircle2, MonitorPlay
 } from 'lucide-react';
 
 // ============================================================
@@ -230,6 +230,21 @@ export default function Dashboard() {
               <h3 className="font-bold text-slate-800 text-lg">Importación Masiva</h3>
               <p className="text-slate-500 text-sm mt-1">
                 Cargar datos desde Excel/CSV
+              </p>
+            </button>
+          )}
+
+          {/* Acceso cruzado: Sala Situacional (solo ADMIN puede verlo aquí;
+              OBSERVADOR_SALA ingresa directamente desde la Landing) */}
+          {user.rol === 'ADMIN' && (
+            <button
+              onClick={() => navigate('/dept/sala-situacional')}
+              className="bg-white rounded-xl shadow-sm p-6 text-left hover:shadow-md hover:border-emerald-300 border-2 border-transparent transition-all"
+            >
+              <MonitorPlay className="w-10 h-10 text-emerald-600 mb-3" />
+              <h3 className="font-bold text-slate-800 text-lg">Sala Situacional</h3>
+              <p className="text-slate-500 text-sm mt-1">
+                Monitoreo global de solo lectura
               </p>
             </button>
           )}

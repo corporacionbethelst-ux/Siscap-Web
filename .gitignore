@@ -1,2 +1,29 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+venv/
+.venv/
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Secretos — NUNCA versionar
+.env
+.env.*
+!.env.example
+backend/.env
+
+# Certificados SSL
+nginx/ssl/*
+!nginx/ssl/.gitkeep
+*.pem
+*.key
+
+# Artefactos / backups / uploads
+backups/
+uploads/
+*.log
+.DS_Store

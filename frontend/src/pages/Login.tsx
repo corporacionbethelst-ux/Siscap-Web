@@ -16,8 +16,17 @@ export default function Login() {
       await login(username, password);
       // Volver al destino solicitado (p. ej. /dept/proteccion-prevencion
       // cuando el usuario hizo clic en "Ingresar al módulo" desde la Landing).
-      const from = (location.state as { from?: string } | null)?.from;
-      navigate(from && from !== '/login' ? from : '/dept/proteccion-prevencion');
+      // El destino puede venir de ProtectedRoute (location.state.from) o del
+      // propio formulario de login (query param ?next=/dept/... para evitar
+      // perder el destino si React Router normaliza/remueve location.state).
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next');
+      const from = (location.state as { from?: string } | null)?.from || next;
+      const destinoValido = from && from.startsWith('/dept/') && from !== '/login';
+      // Redirigir SIEMPRE al departamento solicitado desde la Landing.
+      // ANTES se caía en /dept/proteccion-prevencion por defecto, lo que hacía
+      // que un OPERADOR que pidió Sala Situacional fuera devuelto al portal.
+      navigate(destinoValido ? from : '/dept/proteccion-prevencion');
     } catch (error) {
       // El error ya se maneja con toast en el store
     }
