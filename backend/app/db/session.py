@@ -4,13 +4,26 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-    echo=settings.DEBUG
-)
+# Los parámetros de pooling (pool_size/max_overflow) SOLO son válidos en
+# dialectos con QueuePool (PostgreSQL/MySQL). En SQLite (usado por la suite
+# de tests en memoria) provocarían TypeError, así que se aplican condicional-
+# mente sin cambiar el comportamiento de producción.
+_is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+
+if _is_sqlite:
+    engine = create_engine(
+        settings.DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        echo=settings.DEBUG,
+    )
+else:
+    engine = create_engine(
+        settings.DATABASE_URL,
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20,
+        echo=settings.DEBUG,
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
