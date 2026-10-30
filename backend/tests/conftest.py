@@ -66,14 +66,42 @@ def db():
 
 @pytest.fixture()
 def client(db):
-    """TestClient con get_db apuntando a la BD de prueba."""
+    """TestClient con get_db apuntando a la BD de prueba.
+
+    IMPORTANTE: se construye SIN el gestor de contexto (`with`) para NO
+    disparar el lifespan de la app. El lifespan ejecuta init_db() sobre el
+    engine global (DATABASE_URL=sqlite:///:memory: -> otra BD en memoria
+    distinta) y sembraría zonas/puntos duplicados que contaminan los tests
+    al compartir la misma conexión StaticPool por nombre de tabla.
+    Para pruebas de arranque real existe el fixture `client_lifespan`.
+    """
     def _override_get_db():
         yield db
 
     fastapi_app.dependency_overrides[get_db] = _override_get_db
-    with TestClient(fastapi_app) as c:
+    c = TestClient(fastapi_app)
+    try:
         yield c
-    fastapi_app.dependency_overrides.clear()
+    finally:
+        fastapi_app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def client_lifespan():
+    """TestClient con lifespan activo e init_db neutralizado.
+
+    Permite ejercitar el ciclo de vida real de la app (startup/shutdown)
+    sin tocar ninguna base de datos: se parcha app.main.init_db.
+    """
+    import app.main as app_main
+
+    original_init_db = app_main.init_db
+    app_main.init_db = lambda: None
+    try:
+        with TestClient(fastapi_app) as c:
+            yield c
+    finally:
+        app_main.init_db = original_init_db
 
 
 # ============================================================

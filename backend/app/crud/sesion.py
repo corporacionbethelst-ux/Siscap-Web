@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.models.models import Sesion, Personal, Turno, Evento
@@ -32,9 +33,14 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
                  razon_forzado: str = None):
     """Crea una nueva sesión validando que el PUNTO DE CONTROL no esté en uso."""
     
-    # VALIDACIÓN CRÍTICA: Verificar que el PUNTO DE CONTROL no esté ocupado
+    # VALIDACIÓN CRÍTICA: Verificar que el PUNTO DE CONTROL no esté ocupado.
+    # Nota de aislamiento (regla #1): se consulta por NOMBRE normalizado
+    # (upper/strip) para que 'Macagua' y 'MACAGUA' referencien el mismo punto
+    # físico; en PostgreSQL existe además el índice único parcial
+    # uq_sesion_activa_por_punto como red de seguridad a nivel de BD.
+    nombre_punto = (data.punto_control or "").strip().upper()
     sesion_punto_ocupado = db.query(Sesion).filter(
-        Sesion.punto_control == data.punto_control,
+        func.upper(func.trim(Sesion.punto_control)) == nombre_punto,
         Sesion.estado == "ACTIVA"
     ).first()
     
@@ -92,8 +98,8 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
     sesion = Sesion(
         usuario_id=usuario_id,
         usuario_nombre=usuario_nombre,
-        zona=data.zona,
-        punto_control=data.punto_control,
+        zona=(data.zona or "").strip().upper(),
+        punto_control=nombre_punto,
         grupo_trabajo=data.grupo_trabajo,
         turno_codigo=data.turno_codigo,
         turno_nombre=turno_nombre,
