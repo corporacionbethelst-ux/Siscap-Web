@@ -54,16 +54,18 @@ export const DEPARTAMENTOS: Departamento[] = [
     nombre: 'Departamento de Sala Situacional',
     sigla: 'SS',
     descripcion:
-      'Monitoreo operativo en tiempo real, consolidación de incidencias y apoyo a la toma de decisiones. Módulo en desarrollo dentro de la hoja de ruta de SISCAP Web.',
+      'Centro de monitoreo de SOLO LECTURA: proyección global en tiempo real de todos los procesos operativos del Departamento de Protección y Prevención (turnos abiertos, movimientos de personal/materiales/visitantes y trazabilidad de auditoría). No gestiona ni modifica datos; la operación corresponde exclusivamente a DPP. Requiere perfil OBSERVADOR_SALA o ADMIN.',
     funciones: [
-      'Panel de monitoreo en tiempo real (planificado)',
-      'Consolidación de incidencias por zona (planificado)',
-      'Reportes situacionales (planificado)',
+      'Panorama global de puntos de control y turnos activos',
+      'Consulta consolidada de sesiones/turnos de todos los puntos',
+      'Stream unificado de movimientos (personal, materiales, visitantes)',
+      'Trazabilidad de eventos críticos (apertura/cierre/liberación forzada)',
+      'Exportación de reportes a CSV (solo lectura)',
     ],
     icono: 'monitor',
     color: 'from-emerald-600 to-teal-700',
     acentoColor: 'text-emerald-400',
-    status: 'proximamente',
+    status: 'activo',
     ruta: '/dept/sala-situacional',
   },
 ];

@@ -18,6 +18,8 @@ const Historial = lazy(() => import('./pages/Historial'));
 const Admin = lazy(() => import('./pages/Admin'));
 const Importacion = lazy(() => import('./pages/Importacion'));
 const ConsultaDatos = lazy(() => import('./pages/ConsultaDatos'));
+// Módulo SALA SITUACIONAL — proyección de solo lectura (roles ADMIN / OBSERVADOR_SALA)
+const SalaSituacional = lazy(() => import('./pages/sala/SalaSituacional'));
 
 function PageFallback() {
   return (
@@ -62,6 +64,22 @@ function App() {
         {/* Portal público: selección de departamento (Unidad de Seguridad Integral) */}
         <Route path="/" element={<Landing />} />
         <Route path="/dept/:deptoId" element={<Proximamente />} />
+
+        {/* ============================================================
+            Módulo: SALA SITUACIONAL — Proyección global de SOLO LECTURA.
+            Ruta canónica específica que tiene prioridad sobre el catch-all
+            /dept/:deptoId (que muestra "En desarrollo"). El guard de rol
+            (ADMIN / OBSERVADOR_SALA) se aplica dentro de la página y es
+            respaldado por 403 en backend (/api/sala-situacional/*).
+            ============================================================ */}
+        <Route
+          path="/dept/sala-situacional"
+          element={
+            <ProtectedRoute>
+              <SalaSituacional />
+            </ProtectedRoute>
+          }
+        />
 
         {/* ============================================================
             Módulo: Departamento de Protección y Prevención (DPP)
