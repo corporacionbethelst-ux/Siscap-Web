@@ -146,6 +146,6 @@ def crear_sesion(db: Session, usuario_id: int, usuario_nombre: str, data, forzar
         raise ValueError(
             f"El punto de control '{data.punto_control}' acaba de ser ocupado "
             f"por otra apertura concurrente. Intente de nuevo."
-        )
+        ) from None
     db.refresh(sesion)
     return sesion

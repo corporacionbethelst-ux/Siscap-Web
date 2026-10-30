@@ -41,7 +41,7 @@ def registrar_movimiento(
         )
         return mov
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 
 @router.get("/personal/turno/{sesion_id}", response_model=list[MovimientoPersonalResponse])
@@ -93,7 +93,7 @@ def registrar_material(
         mov = crud_movimiento.registrar_movimiento_material(db=db, sesion=sesion, data=data)
         return mov
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.get("/materiales/turno/{sesion_id}", response_model=list[MovimientoMaterialResponse])

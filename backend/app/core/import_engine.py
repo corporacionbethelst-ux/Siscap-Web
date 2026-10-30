@@ -175,7 +175,11 @@ def mapear_columnas(columnas_archivo: list[str], tipo: str) -> dict[str, str | N
 
 def validar_columnas_requeridas(mapeo: dict[str, str | None], tipo: str) -> tuple[bool, list[str]]:
     config = TIPOS_IMPORTACION[tipo]
-    errores = [f"Columna requerida '{col_req}' no encontrada" for col_req in config["columnas_requeridas"] if not mapeo.get(col_req)]
+    errores = [
+        f"Columna requerida '{col_req}' no encontrada"
+        for col_req in config["columnas_requeridas"]
+        if not mapeo.get(col_req)
+    ]
     return len(errores) == 0, errores
 
 

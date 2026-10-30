@@ -15,6 +15,7 @@ from app.core.import_engine import (
     procesar_importacion,
     validar_columnas_requeridas,
 )
+from app.core.security import verify_admin
 from app.core.upload_config import (
     get_upload_paths,
     validate_file_extension,
@@ -36,9 +37,6 @@ router = APIRouter(prefix="/api/importacion", tags=["Importación Masiva"])
 
 # Almacenamiento temporal de archivos subidos (en memoria, por archivo_id)
 _archivos_pendientes = {}
-
-
-from app.core.security import verify_admin
 
 
 # ============================================================
@@ -128,7 +126,7 @@ def preview_archivo(
     try:
         columnas, filas_preview, total_filas = parse_excel_file(info["ruta"], max_preview=10)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error al leer archivo: {e!s}")
+        raise HTTPException(status_code=400, detail=f"Error al leer archivo: {e!s}") from e
 
     # Mapear columnas
     mapeo = mapear_columnas(columnas, tipo)
@@ -256,7 +254,7 @@ def procesar_archivo(
         # Capturar el error real y mostrarlo en los logs de Docker
         error_trace = traceback.format_exc()
         print(f"❌ ERROR CRÍTICO EN IMPORTACIÓN:\n{error_trace}")
-        raise HTTPException(status_code=500, detail=f"Error interno al procesar: {e!s}")
+        raise HTTPException(status_code=500, detail=f"Error interno al procesar: {e!s}") from e
 
 
 # ============================================================

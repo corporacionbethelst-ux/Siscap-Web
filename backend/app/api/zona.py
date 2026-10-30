@@ -68,7 +68,7 @@ def crear_zona(
             en_uso=False, usuario_en_uso=None, total_puntos=0
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.put("/{zona_id}", response_model=ZonaResponse)
@@ -90,7 +90,7 @@ def actualizar_zona(
             total_puntos=estado_zona.get("total_puntos", 0) if estado_zona else 0
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 # ============================================================
@@ -136,7 +136,7 @@ def crear_punto_control(
             zona_nombre=punto.zona.nombre if punto.zona else None
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 @router.put("/puntos-control/{punto_id}", response_model=PuntoControlResponse)
@@ -154,7 +154,7 @@ def actualizar_punto_control(
             zona_nombre=punto.zona.nombre if punto.zona else None
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
 # ============================================================
